@@ -369,9 +369,9 @@ main{flex:1;padding:24px 22px 60px;}
         </div>
         <div id="lista-metodos"></div>
         <div class="note">
-          <b>Casos que pedem prazo próprio no produto.</b> Pescado cru resfriado: 2 dias. Carne crua resfriada:
-          3 dias — e a CVS-3/2026 exige faixa de 0&nbsp;°C a 5&nbsp;°C para carnes e pescados crus. Cadastre o
-          produto normalmente e sobrescreva o prazo na linha do método.
+          <b>Pescado cru manipulado: máximo 2&nbsp;°C, 3 dias.</b> Carne crua manipulada: máximo 4&nbsp;°C, 3 dias.
+          Carne temperada, moída ou em espeto: mesmo 4&nbsp;°C, mas só 2 dias. São faixas diferentes — confira o
+          método certo na hora de cadastrar.
         </div>
       </div>
     </section>
@@ -562,14 +562,24 @@ const FAMILIAS = ["Quente","Resfriado","Congelado","Ambiente","Descongelamento"]
 /* Prazos iniciais — referência Portaria CVS-3/2026 (SP). Editáveis pelo gestor.
    Usado só para SEMEAR a tabela `metodos` de um restaurante novo, na primeira vez. */
 const METODOS_PADRAO = [
-  {nome:"Resfriado até 4 °C",        familia:"Resfriado",       horas:72},
-  {nome:"Resfriado até 6 °C",        familia:"Resfriado",       horas:48},
-  {nome:"Resfriado até 8 °C",        familia:"Resfriado",       horas:24},
-  {nome:"Congelado −18 °C",          familia:"Congelado",       horas:2160},
-  {nome:"Descongelamento até 4 °C",  familia:"Descongelamento", horas:72},
-  {nome:"Quente ≥ 60 °C",            familia:"Quente",          horas:6},
-  {nome:"Resfriamento pós-cocção",   familia:"Resfriado",       horas:6},
-  {nome:"Ambiente seco",             familia:"Ambiente",        horas:720}
+  {nome:"Pescado cru manipulado — máx 2 °C",                             familia:"Resfriado",       horas:72},
+  {nome:"Pescado pós-cocção — máx 2 °C",                                 familia:"Resfriado",       horas:24},
+  {nome:"Alimento pós-cocção (exceto pescado) — máx 4 °C",               familia:"Resfriado",       horas:72},
+  {nome:"Carne crua manipulada (bovina, suína, aves) — máx 4 °C",        familia:"Resfriado",       horas:72},
+  {nome:"Carne temperada crua / moída / espeto / bife rolê — máx 4 °C",  familia:"Resfriado",       horas:48},
+  {nome:"Frios e embutidos fatiados, picados ou moídos — máx 4 °C",      familia:"Resfriado",       horas:72},
+  {nome:"Maionese e misturas com maionese — máx 4 °C",                   familia:"Resfriado",       horas:48},
+  {nome:"Sobremesa, confeitaria com recheio, preparações com laticínios — máx 4 °C", familia:"Resfriado", horas:72},
+  {nome:"Demais alimentos preparados — máx 4 °C",                        familia:"Resfriado",       horas:72},
+  {nome:"Hortifruti higienizado, fracionado; sucos e polpas — máx 5 °C", familia:"Resfriado",       horas:72},
+  {nome:"Congelado abaixo de −18 °C",                                    familia:"Congelado",       horas:2160},
+  {nome:"Congelado −11 a −18 °C",                                        familia:"Congelado",       horas:720},
+  {nome:"Congelado −6 a −10 °C",                                         familia:"Congelado",       horas:480},
+  {nome:"Congelado 0 a −5 °C",                                           familia:"Congelado",       horas:240},
+  {nome:"Quente em espera — mín 60 °C",                                  familia:"Quente",          horas:6},
+  {nome:"Resfriamento pós-cocção — 60→10 °C",                            familia:"Resfriado",       horas:2},
+  {nome:"Descongelamento — abaixo de 5 °C (sem prazo próprio — defina por produto)", familia:"Descongelamento", horas:0},
+  {nome:"Ambiente (prazo não definido na norma — defina no seu MBP)",    familia:"Ambiente",        horas:0}
 ];
 
 /* ===================== DADOS EM MEMÓRIA (carregados do Supabase após login) ===================== */
@@ -781,7 +791,7 @@ function renderProdutos(){
 /* ===================== CADASTRO EM LOTE ===================== */
 function abrirLote(){
   document.getElementById('lote-txt').value = "";
-  const padrao = DB.metodos.find(m => m.nome === "Resfriado até 4 °C") || DB.metodos[0];
+  const padrao = DB.metodos.find(m => m.nome === "Demais alimentos preparados — máx 4 °C") || DB.metodos[0];
   linhasMetodos('lote-metodos', padrao ? [{mid:padrao.id}] : []);
   abrir('m-lote');
 }
