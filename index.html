@@ -330,8 +330,8 @@ main{flex:1;padding:22px;}
    Quem protege os dados de cada restaurante é a regra RLS no banco,
    não o sigilo dessa chave.
    ============================================================ */
-const SUPABASE_URL = "COLE_AQUI_A_PROJECT_URL";
-const SUPABASE_ANON_KEY = "COLE_AQUI_A_ANON_KEY";
+const SUPABASE_URL = "https://aqcczkevyycvsvjvhrdx.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_b92iL0z7pryXIuZ1NeLz4A_6MKgXIc_";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ===== TABELA DE REFERÊNCIA — Portaria CVS-3/2026 (SP) =====
@@ -542,7 +542,7 @@ document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
    pelo dono do negócio, direto no painel do Supabase.
    ============================================================ */
 function mostrarTelaLogin(){document.getElementById('tela-login').classList.add('open');document.getElementById('app-root').style.display='none';}
-function mostrarApp(){document.getElementById('tela-login').classList.remove('open');document.getElementById('app-root').style.display='';}
+function mostrarApp(){document.getElementById('tela-login').classList.remove('open');document.getElementById('app-root').style.display='flex';}
 function mostrarLoginForm(){document.getElementById('login-form').style.display='';document.getElementById('esqueci-form').style.display='none';document.getElementById('nova-senha-form').style.display='none';}
 function mostrarEsqueciSenha(){document.getElementById('login-form').style.display='none';document.getElementById('esqueci-form').style.display='';document.getElementById('nova-senha-form').style.display='none';}
 function mostrarNovaSenha(){document.getElementById('login-form').style.display='none';document.getElementById('esqueci-form').style.display='none';document.getElementById('nova-senha-form').style.display='';}
