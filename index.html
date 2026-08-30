@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Etiquetas de Validade — Saes Food Lab</title>
+<style>
+/* ============================================================
+   SAES FOOD LAB — Módulo Etiquetas de Validade (v3)
+   Etiqueta universal (espelha a etiqueta física real) +
+   campos legais CVS-5 (Art.30/Art.31), SIF, lote, descongelamento.
+   Dados em Supabase (login por email/senha), isolados por restaurante.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&display=swap');
+
+:root{
+  --bg:#14110e;--surface:#1d1915;--surface-2:#262019;--line:#3a3128;
+  --ink:#f4ede2;--ink-dim:#a89a86;--accent:#e8590c;--accent-2:#f0a64a;
+  --green:#4f9d69;--amber:#d9a300;--red:#d6453f;--radius:16px;--tap:#2f2820;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{font-family:'Archivo',system-ui,sans-serif;
+  background:radial-gradient(1200px 600px at 80% -10%, rgba(232,89,12,.12), transparent 60%),var(--bg);
+  color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+.app{max-width:1100px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+header.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg, rgba(20,17,14,.96), rgba(20,17,14,.86));backdrop-filter:blur(8px);}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand .mark{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;font-weight:900;font-size:20px;color:#231405;box-shadow:0 4px 14px rgba(232,89,12,.35);}
+.brand h1{font-size:16px;letter-spacing:.3px;margin:0;font-weight:800;}
+.brand small{display:block;color:var(--ink-dim);font-weight:600;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+nav.tabs{display:flex;gap:6px;}
+nav.tabs button{font-family:inherit;font-weight:700;font-size:14px;border:none;background:transparent;color:var(--ink-dim);
+  padding:11px 16px;border-radius:11px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:8px;}
+nav.tabs button.active{background:var(--tap);color:var(--ink);}
+nav.tabs button:hover{color:var(--ink);}
+main{flex:1;padding:22px;}
+.view{display:none;animation:fade .25s ease;}
+.view.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.searchbar{display:flex;gap:12px;margin-bottom:20px;align-items:center;flex-wrap:wrap;}
+.searchbar input{flex:1;min-width:200px;font-family:inherit;font-size:16px;background:var(--surface);
+  border:1px solid var(--line);color:var(--ink);padding:14px 16px;border-radius:13px;outline:none;}
+.searchbar input:focus{border-color:var(--accent);}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:14px;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;
+  cursor:pointer;transition:.15s;text-align:left;position:relative;overflow:hidden;min-height:132px;
+  display:flex;flex-direction:column;justify-content:space-between;}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.card:active{transform:scale(.97);}
+.card .cat-pill{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--accent-2);margin-bottom:8px;}
+.card .nome{font-size:18px;font-weight:800;line-height:1.15;margin:0;}
+.card .meta{display:flex;align-items:center;gap:6px;margin-top:12px;color:var(--ink-dim);font-size:12px;font-weight:600;flex-wrap:wrap;}
+.card .dias-tag{background:var(--surface-2);border:1px solid var(--line);padding:4px 9px;border-radius:8px;font-weight:800;color:var(--ink);}
+.card .modo-tag{font-size:11px;}
+.empty{text-align:center;padding:70px 20px;color:var(--ink-dim);border:2px dashed var(--line);border-radius:var(--radius);}
+.empty h3{color:var(--ink);font-size:18px;margin:0 0 6px;}
+.btn{font-family:inherit;font-weight:800;font-size:15px;border:none;cursor:pointer;padding:13px 20px;border-radius:12px;
+  transition:.15s;display:inline-flex;align-items:center;gap:8px;justify-content:center;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#231405;}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-ghost{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);}
+.btn-ghost:hover{border-color:var(--accent);}
+.btn-block{width:100%;}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+.section-head h2{font-size:22px;margin:0;font-weight:800;}
+.section-head p{margin:4px 0 0;color:var(--ink-dim);font-size:13px;}
+.list-row{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+.list-row .info{flex:1;min-width:0;}
+.list-row .info .nome{font-weight:800;font-size:16px;}
+.list-row .info .sub{color:var(--ink-dim);font-size:12.5px;margin-top:3px;}
+.list-row .acts{display:flex;gap:8px;}
+.icon-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-dim);width:38px;height:38px;
+  border-radius:10px;cursor:pointer;display:grid;place-items:center;font-size:16px;}
+.icon-btn:hover{color:var(--ink);border-color:var(--accent);}
+.overlay{position:fixed;inset:0;background:rgba(8,6,4,.72);backdrop-filter:blur(3px);display:none;
+  align-items:flex-start;justify-content:center;z-index:50;padding:24px;overflow-y:auto;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:20px;width:100%;max-width:540px;
+  padding:26px;margin:auto;animation:pop .2s ease;}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.modal h3{margin:0 0 4px;font-size:20px;font-weight:800;}
+.modal .hint{color:var(--ink-dim);font-size:13px;margin:0 0 20px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-dim);margin-bottom:7px;}
+.field input,.field select{width:100%;font-family:inherit;font-size:16px;background:var(--surface-2);
+  border:1px solid var(--line);color:var(--ink);padding:13px 14px;border-radius:11px;outline:none;}
+.field input:focus,.field select:focus{border-color:var(--accent);}
+.field .row{display:flex;gap:12px;}
+.field .row>*{flex:1;}
+.field .opt{font-size:10px;color:var(--ink-dim);font-weight:700;}
+.fieldset-opt{border:1px dashed var(--line);border-radius:12px;padding:14px 14px 2px;margin-bottom:16px;}
+.fieldset-opt .leg{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--accent-2);margin-bottom:12px;}
+.suggest-box{background:rgba(232,89,12,.08);border:1px solid rgba(232,89,12,.3);border-radius:11px;padding:12px 14px;
+  font-size:13px;color:var(--accent-2);display:flex;align-items:center;gap:9px;margin-bottom:16px;}
+.suggest-box b{color:var(--ink);}
+.modal-actions{display:flex;gap:10px;margin-top:8px;}
+.modal-actions .btn{flex:1;}
+.disclaimer{margin-top:26px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--amber);
+  border-radius:11px;padding:15px 17px;font-size:12.5px;line-height:1.55;color:var(--ink-dim);}
+.disclaimer b{color:var(--ink);}
+
+/* ---------- Preview da etiqueta (espelha física) ---------- */
+.label-preview{background:#fff;color:#000;border-radius:6px;padding:12px 13px;margin:8px 0 18px;
+  font-family:'Archivo',sans-serif;border:2px solid #000;}
+.lp-prod{font-size:20px;font-weight:900;line-height:1;text-transform:uppercase;border-bottom:1.5px solid #000;padding-bottom:5px;}
+.lp-line{display:flex;justify-content:space-between;font-size:12px;margin-top:5px;font-weight:700;}
+.lp-line .lbl{color:#444;font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:.3px;}
+.lp-val{color:#b3261e;font-weight:900;}
+.lp-modos{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;border-top:1px solid #000;padding-top:6px;}
+.lp-modo{font-size:10px;font-weight:700;border:1px solid #bbb;border-radius:3px;padding:2px 5px;text-transform:uppercase;color:#aaa;}
+.lp-modo.on{background:#000;color:#fff;border:1.5px solid #000;font-weight:900;font-size:11px;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.lp-extra{display:flex;flex-wrap:wrap;gap:10px;margin-top:7px;font-size:10px;font-weight:700;border-top:1px solid #000;padding-top:5px;}
+.lp-foot{font-size:8px;color:#666;margin-top:7px;letter-spacing:.2px;}
+
+.hist-row{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px;}
+.hist-row:last-child{border-bottom:none;}
+.hist-row .h-prod{font-weight:700;}
+.hist-row .h-meta{color:var(--ink-dim);font-size:12px;}
+.config-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;max-width:560px;}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green);color:#fff;
+  font-weight:800;padding:14px 24px;border-radius:13px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:90;transition:.3s;opacity:0;font-size:15px;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+@media(max-width:640px){nav.tabs button span{display:none;}.brand h1{font-size:14px;}main{padding:16px;}}
+
+/* ---------- Login ---------- */
+#app-root{display:none;}
+.login-wrap{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px;}
+.login-wrap.open{display:flex;}
+.login-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:32px;max-width:380px;width:100%;}
+.login-card .mark{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;font-weight:900;font-size:26px;color:#231405;margin:0 auto 18px;}
+.login-card h1{text-align:center;font-size:18px;margin:0 0 4px;}
+.login-card p.hint{text-align:center;margin:0 0 20px;}
+.link-btn{background:none;border:none;color:var(--accent-2);font-weight:700;font-size:13px;cursor:pointer;padding:0;text-decoration:underline;}
+.login-msg{font-size:13px;margin-top:12px;text-align:center;color:var(--ink-dim);min-height:16px;}
+.login-msg.err{color:var(--red);}
+.login-msg.ok{color:var(--green);}
+
+/* ============================================================
+   IMPRESSÃO — etiqueta 60x60mm (ajuste @page p/ outro tamanho)
+   ============================================================ */
+#print-area{display:none;}
+@media print{
+  @page{ size:60mm 60mm; margin:0; }
+  body *{visibility:hidden;}
+  #print-area,#print-area *{visibility:visible;}
+  #print-area{display:block;position:fixed;left:0;top:0;width:60mm;height:60mm;padding:2mm 2.2mm;
+    color:#000;background:#fff;font-family:'Archivo',sans-serif;box-sizing:border-box;overflow:hidden;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .pa-prod{font-size:10.5pt;font-weight:900;line-height:1.02;text-transform:uppercase;
+    border-bottom:.35mm solid #000;padding-bottom:.8mm;max-height:8.5mm;overflow:hidden;}
+  .pa-line{display:flex;justify-content:space-between;gap:1.5mm;font-size:6.6pt;font-weight:800;margin-top:.9mm;}
+  .pa-line .l{font-size:5.6pt;font-weight:700;text-transform:uppercase;white-space:nowrap;}
+  .pa-val{color:#000;font-weight:900;font-size:7.2pt;text-align:right;}
+  .pa-modos{display:flex;flex-wrap:wrap;gap:.7mm;margin-top:1mm;border-top:.3mm solid #000;padding-top:.9mm;}
+  .pa-modo{font-size:5.3pt;font-weight:700;border:.22mm solid #999;border-radius:.5mm;padding:.25mm .8mm;text-transform:uppercase;color:#999;}
+  .pa-modo.on{background:#000;color:#fff;border:.4mm solid #000;font-weight:900;font-size:6pt;padding:.4mm 1.1mm;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .pa-extra{display:flex;flex-wrap:wrap;gap:1.5mm;margin-top:.9mm;font-size:5.3pt;font-weight:700;
+    border-top:.3mm solid #000;padding-top:.8mm;}
+  .pa-foot{font-size:4.1pt;color:#000;margin-top:.8mm;border-top:.25mm solid #000;padding-top:.5mm;font-weight:600;line-height:1.25;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ TELA DE LOGIN ============ -->
+<div class="login-wrap" id="tela-login">
+  <div class="login-card">
+    <div class="mark">S</div>
+    <h1>Etiquetas de Validade</h1>
+    <p class="hint">Saes Food Lab — entre com sua conta</p>
+
+    <div id="login-form">
+      <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com" autocomplete="username"></div>
+      <div class="field"><label>Senha</label><input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-primary btn-block" onclick="fazerLogin()">Entrar</button>
+      <div style="text-align:center;margin-top:14px;"><button class="link-btn" onclick="mostrarEsqueciSenha()">Esqueci minha senha</button></div>
+      <div class="login-msg" id="login-msg"></div>
+    </div>
+
+    <div id="esqueci-form" style="display:none;">
+      <p class="hint">Informe seu email. Vamos enviar um link para redefinir a senha.</p>
+      <div class="field"><label>Email</label><input type="email" id="reset-email" placeholder="seu@email.com"></div>
+      <button class="btn btn-primary btn-block" onclick="enviarResetSenha()">Enviar link</button>
+      <div style="text-align:center;margin-top:14px;"><button class="link-btn" onclick="mostrarLoginForm()">Voltar ao login</button></div>
+      <div class="login-msg" id="reset-msg"></div>
+    </div>
+
+    <div id="nova-senha-form" style="display:none;">
+      <p class="hint">Defina sua nova senha.</p>
+      <div class="field"><label>Nova senha</label><input type="password" id="nova-senha" placeholder="mínimo 6 caracteres" autocomplete="new-password"></div>
+      <button class="btn btn-primary btn-block" onclick="salvarNovaSenha()">Salvar nova senha</button>
+      <div class="login-msg" id="nova-senha-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app-root">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">S</div>
+      <div><h1>Etiquetas de Validade</h1><small>Saes Food Lab</small></div>
+    </div>
+    <div class="topbar-right">
+      <nav class="tabs">
+        <button class="tab-btn active" data-view="imprimir">🏷️ <span>Imprimir</span></button>
+        <button class="tab-btn" data-view="produtos">📋 <span>Produtos</span></button>
+        <button class="tab-btn" data-view="historico">🕓 <span>Histórico</span></button>
+        <button class="tab-btn" data-view="config">⚙️ <span>Config</span></button>
+      </nav>
+      <button class="icon-btn" title="Sair" onclick="fazerLogout()">🚪</button>
+    </div>
+  </header>
+  <main>
+    <section class="view active" id="view-imprimir">
+      <div class="searchbar">
+        <input type="text" id="busca" placeholder="🔍 Buscar produto...">
+        <button class="btn btn-ghost" onclick="goView('produtos')">+ Cadastrar</button>
+      </div>
+      <div class="grid" id="grid-produtos"></div>
+      <div class="disclaimer">
+        <b>Aviso legal.</b> Os prazos sugeridos têm como referência a <b>Portaria CVS-3/2026</b> (Estado de São Paulo), que substitui a CVS-5/2013 a partir de <b>04/10/2026</b> (até lá, a norma anterior segue valendo). Outras cidades/estados podem ter normas próprias (ex.: Portaria SMS 2.619/11, município de SP). São sugestões e <b>não substituem o Manual de Boas Práticas</b> nem a orientação do responsável técnico. A definição final dos prazos é responsabilidade do gestor. Itens descongelados <b>não devem ser recongelados</b>.
+      </div>
+    </section>
+
+    <section class="view" id="view-produtos">
+      <div class="section-head">
+        <div><h2>Produtos cadastrados</h2><p>Categoria + temperatura → prazo sugerido (CVS-3/2026), sempre editável.</p></div>
+        <button class="btn btn-primary" onclick="abrirCadastro()">+ Novo produto</button>
+      </div>
+      <div id="lista-produtos"></div>
+    </section>
+
+    <section class="view" id="view-historico">
+      <div class="section-head">
+        <div><h2>Histórico de impressões</h2><p>Registro das etiquetas geradas por este restaurante.</p></div>
+        <button class="btn btn-ghost" onclick="limparHistorico()">Limpar</button>
+      </div>
+      <div class="config-card" style="max-width:none;padding:6px 0;" id="lista-historico"></div>
+    </section>
+
+    <section class="view" id="view-config">
+      <div class="section-head"><div><h2>Configurações</h2><p>Dados que aparecem na etiqueta.</p></div></div>
+      <div class="config-card">
+        <div class="field"><label>Nome do estabelecimento</label><input type="text" id="cfg-nome" placeholder="Ex: Tacomex — Unidade Centro"></div>
+        <div class="field"><label>CNPJ (opcional)</label><input type="text" id="cfg-cnpj" placeholder="00.000.000/0000-00"></div>
+        <div class="field"><label>Responsável padrão (opcional)</label><input type="text" id="cfg-resp" placeholder="Ex: Chef de cozinha"></div>
+        <button class="btn btn-primary btn-block" onclick="salvarConfig()">Salvar configurações</button>
+        <div class="disclaimer" style="border-left-color:var(--accent);margin-top:20px;">
+          <b>Dica de impressão.</b> Configure a etiqueta (padrão 60×60mm) no driver da impressora térmica e deixe-a como padrão. No Chrome, ative o modo <b>kiosk-printing</b> para imprimir sem abrir a janela a cada vez.
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ MODAL CADASTRO ============ -->
+<div class="overlay" id="modal-cadastro">
+  <div class="modal">
+    <h3 id="modal-titulo">Novo produto</h3>
+    <p class="hint">Categoria e temperatura geram a sugestão de prazo. Campos opcionais para fracionamento/SIF.</p>
+    <input type="hidden" id="prod-id">
+    <div class="field"><label>Nome do produto</label><input type="text" id="prod-nome" placeholder="Ex: Frango grelhado desfiado"></div>
+    <div class="field"><label>Categoria (CVS-3/2026)</label><select id="prod-cat" onchange="atualizarTemps()"></select></div>
+    <div class="field"><label>Temperatura de conservação</label><select id="prod-temp" onchange="onTempChange()"></select></div>
+    <div class="suggest-box" id="suggest-box" style="display:none;">💡 <span>Sugestão CVS-3/2026: <b id="suggest-dias"></b></span></div>
+    <div class="field"><label>Validade (dias) — editável</label><input type="number" id="prod-dias" min="0" step="1" placeholder="0"></div>
+    <div class="field"><label>Modo de conservação (etiqueta)</label>
+      <select id="prod-modo">
+        <option>Quente</option><option>Resfriado</option><option>Congelado</option><option>Ambiente</option><option>Descongelamento</option>
+      </select>
+    </div>
+    <div class="fieldset-opt">
+      <div class="leg">Rastreabilidade (opcional — fracionamento / Art. 30)</div>
+      <div class="field"><label>SIF <span class="opt">opcional</span></label><input type="text" id="prod-sif" placeholder="Ex: SIF 1234"></div>
+      <div class="field"><div class="row">
+        <div><label>Fabricante/Fornecedor</label><input type="text" id="prod-fab" placeholder="opcional"></div>
+        <div><label>Marca</label><input type="text" id="prod-marca" placeholder="opcional"></div>
+      </div></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-cadastro')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarProduto()">Salvar produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL IMPRESSÃO ============ -->
+<div class="overlay" id="modal-imprimir">
+  <div class="modal">
+    <h3>Imprimir etiqueta</h3>
+    <p class="hint">Confira os dados. Manipulação = agora. Validade calculada automaticamente.</p>
+    <div class="label-preview" id="label-preview"></div>
+    <div class="field"><div class="row">
+      <div><label>Data de fabricação <span class="opt">opcional</span></label><input type="date" id="imp-fab"></div>
+      <div><label>Lote interno <span class="opt">automático</span></label><input type="text" id="imp-lote" placeholder="—"></div>
+    </div></div>
+    <div class="field"><div class="row">
+      <div><label>Responsável</label><input type="text" id="imp-resp" placeholder="Quem preparou"></div>
+      <div><label>SIF <span class="opt">opcional</span></label><input type="text" id="imp-sif" placeholder="—"></div>
+    </div></div>
+    <div class="field"><label>Quantidade de etiquetas</label><input type="number" id="imp-qtd" value="1" min="1" max="50"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-imprimir')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarImpressao()">🖨️ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<div id="print-area"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ============================================================
+   CONFIGURAÇÃO DO SUPABASE
+   Painel do Supabase → seu projeto → Configurações → API:
+   - Project URL
+   - anon public key
+   Nenhum dos dois é secreto: são feitos para ficar no código do app.
+   Quem protege os dados de cada restaurante é a regra RLS no banco,
+   não o sigilo dessa chave.
+   ============================================================ */
+const SUPABASE_URL = "COLE_AQUI_A_PROJECT_URL";
+const SUPABASE_ANON_KEY = "COLE_AQUI_A_ANON_KEY";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ===== TABELA DE REFERÊNCIA — Portaria CVS-3/2026 (SP) =====
+   Vigência: 04/10/2026 (substitui CVS-5/2013). Até lá, ambas coexistem
+   em transição. Valores conforme mudanças confirmadas na nova norma;
+   demais categorias mantidas da CVS-5/2013 até confirmação do texto
+   integral. Gestor pode e deve sobrescrever conforme seu MBP. */
+const CVS5 = {
+  pescado_cru:{label:"Pescado cru / manipulado",opcoes:[{t:"Refrigerado 0°C a 5°C (obrigatório)",dias:2,modo:"Resfriado"},{t:"Congelado -18°C",dias:90,modo:"Congelado"}]},
+  carne_crua:{label:"Carne crua (bovina/suína/aves)",opcoes:[{t:"Refrigerado 0°C a 5°C (obrigatório)",dias:3,modo:"Resfriado"},{t:"Congelado -18°C",dias:90,modo:"Congelado"}]},
+  pos_coccao:{label:"Alimento pós-cocção (preparado)",opcoes:[{t:"Refrigerado até 4°C",dias:3,modo:"Resfriado"},{t:"Refrigerado até 6°C",dias:2,modo:"Resfriado"},{t:"Refrigerado até 8°C",dias:1,modo:"Resfriado"},{t:"Congelado -18°C",dias:90,modo:"Congelado"},{t:"Quente ≥60°C (mesmo dia)",dias:0,modo:"Quente"}]},
+  frios_lat:{label:"Frios e laticínios manipulados",opcoes:[{t:"Refrigerado até 4°C",dias:3,modo:"Resfriado"},{t:"Refrigerado até 6°C",dias:2,modo:"Resfriado"},{t:"Refrigerado até 8°C",dias:1,modo:"Resfriado"}]},
+  sobremesa:{label:"Sobremesas / confeitaria / laticínios",opcoes:[{t:"Refrigerado até 4°C (máximo permitido)",dias:3,modo:"Resfriado"}]},
+  vegetais:{label:"Folhosos e vegetais higienizados",opcoes:[{t:"Refrigerado até 4°C",dias:3,modo:"Resfriado"},{t:"Refrigerado até 6°C",dias:2,modo:"Resfriado"},{t:"Refrigerado até 8°C",dias:1,modo:"Resfriado"}]},
+  descongelado:{label:"Descongelado (uso após descongelar)",opcoes:[{t:"Refrigerado até 4°C",dias:3,modo:"Descongelamento"},{t:"Refrigerado até 6°C",dias:2,modo:"Descongelamento"}]},
+  outro:{label:"Outro / definir manualmente",opcoes:[{t:"Refrigerado",dias:null,modo:"Resfriado"},{t:"Congelado",dias:null,modo:"Congelado"},{t:"Ambiente",dias:null,modo:"Ambiente"}]}
+};
+const MODOS = ["Quente","Resfriado","Congelado","Ambiente","Descongelamento"];
+
+/* ===== DADOS EM MEMÓRIA (carregados do Supabase após o login) ===== */
+let DB = { estabelecimento:{nome:"",cnpj:""}, config:{responsavel_padrao:""}, produtos:[], historico:[] };
+let ORG_ID = null;
+let USER_ID = null;
+
+/* ===== NAV ===== */
+function goView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelector(`.tab-btn[data-view="${v}"]`)?.classList.add('active');
+  if(v==='produtos')renderProdutos();if(v==='historico')renderHistorico();if(v==='imprimir')renderGrid();}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>goView(b.dataset.view)));
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* ===== GRID IMPRESSÃO ===== */
+function renderGrid(){
+  const grid=document.getElementById('grid-produtos');
+  const termo=(document.getElementById('busca').value||"").toLowerCase();
+  const lista=DB.produtos.filter(p=>p.nome.toLowerCase().includes(termo));
+  if(DB.produtos.length===0){grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><h3>Nenhum produto cadastrado</h3>
+    <p>Cadastre seus produtos para começar a imprimir.</p>
+    <button class="btn btn-primary" style="margin-top:14px" onclick="goView('produtos')">+ Cadastrar primeiro produto</button></div>`;return;}
+  if(lista.length===0){grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><h3>Nada encontrado</h3></div>`;return;}
+  grid.innerHTML=lista.map(p=>`<button class="card" onclick="abrirImpressao('${p.id}')">
+    <div><div class="cat-pill">${CVS5[p.categoria]?.label||"—"}</div><p class="nome">${p.nome}</p></div>
+    <div class="meta"><span class="dias-tag">${p.dias!=null?p.dias+'d':'—'}</span><span class="modo-tag">${p.modo||''}</span></div>
+  </button>`).join('');
+}
+document.getElementById('busca').addEventListener('input',renderGrid);
+
+/* ===== CADASTRO ===== */
+function popularCategorias(){const s=document.getElementById('prod-cat');
+  s.innerHTML=Object.entries(CVS5).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');}
+function atualizarTemps(){const cat=document.getElementById('prod-cat').value;const s=document.getElementById('prod-temp');
+  s.innerHTML=CVS5[cat].opcoes.map((o,i)=>`<option value="${i}">${o.t}</option>`).join('');onTempChange();}
+function onTempChange(){const cat=document.getElementById('prod-cat').value;const i=document.getElementById('prod-temp').value;
+  const opt=CVS5[cat].opcoes[i];const box=document.getElementById('suggest-box');
+  if(opt.modo)document.getElementById('prod-modo').value=opt.modo;
+  if(opt&&opt.dias!=null){document.getElementById('suggest-dias').textContent=opt.dias+" dia(s)";box.style.display='flex';
+    const c=document.getElementById('prod-dias');if(!c.value||c.dataset.auto==='1'){c.value=opt.dias;c.dataset.auto='1';}}
+  else box.style.display='none';}
+document.getElementById('prod-dias').addEventListener('input',e=>{e.target.dataset.auto='0';});
+function abrirCadastro(){document.getElementById('modal-titulo').textContent="Novo produto";
+  document.getElementById('prod-id').value="";document.getElementById('prod-nome').value="";
+  popularCategorias();document.getElementById('prod-cat').value="pos_coccao";atualizarTemps();
+  document.getElementById('prod-dias').value="";document.getElementById('prod-dias').dataset.auto='1';
+  document.getElementById('prod-sif').value="";document.getElementById('prod-fab').value="";document.getElementById('prod-marca').value="";
+  onTempChange();abrirModal('modal-cadastro');}
+function editarProduto(id){const p=DB.produtos.find(x=>x.id===id);if(!p)return;
+  document.getElementById('modal-titulo').textContent="Editar produto";
+  document.getElementById('prod-id').value=p.id;document.getElementById('prod-nome').value=p.nome;
+  popularCategorias();document.getElementById('prod-cat').value=p.categoria;atualizarTemps();
+  const idx=CVS5[p.categoria].opcoes.findIndex(o=>o.t===p.temp);document.getElementById('prod-temp').value=idx>=0?idx:0;
+  document.getElementById('prod-dias').value=p.dias!=null?p.dias:"";document.getElementById('prod-dias').dataset.auto='0';
+  document.getElementById('prod-modo').value=p.modo||"Resfriado";
+  document.getElementById('prod-sif').value=p.sif||"";document.getElementById('prod-fab').value=p.fabricante||"";document.getElementById('prod-marca').value=p.marca||"";
+  document.getElementById('suggest-box').style.display='none';abrirModal('modal-cadastro');}
+async function salvarProduto(){const nome=document.getElementById('prod-nome').value.trim();
+  if(!nome){toast("Informe o nome do produto");return;}
+  const cat=document.getElementById('prod-cat').value;const ti=document.getElementById('prod-temp').value;
+  const temp=CVS5[cat].opcoes[ti].t;const dr=document.getElementById('prod-dias').value;
+  const dias=dr===""?null:parseInt(dr,10);const modo=document.getElementById('prod-modo').value;
+  const sif=document.getElementById('prod-sif').value.trim();const fab=document.getElementById('prod-fab').value.trim();
+  const marca=document.getElementById('prod-marca').value.trim();const id=document.getElementById('prod-id').value;
+  const campos={nome,categoria:cat,temp,dias,modo,sif,fabricante:fab,marca};
+  const btn=document.querySelector('#modal-cadastro .btn-primary');btn.disabled=true;
+  try{
+    if(id){
+      const {data,error}=await sb.from('produtos').update({...campos,updated_at:new Date().toISOString()}).eq('id',id).select().single();
+      if(error){toast('Erro ao salvar: '+error.message);return;}
+      const p=DB.produtos.find(x=>x.id===id);Object.assign(p,data);
+    }else{
+      const {data,error}=await sb.from('produtos').insert({...campos,org_id:ORG_ID}).select().single();
+      if(error){toast('Erro ao salvar: '+error.message);return;}
+      DB.produtos.push(data);
+    }
+  }finally{btn.disabled=false;}
+  renderProdutos();fecharModal('modal-cadastro');toast("Produto salvo");}
+async function excluirProduto(id){if(!confirm("Excluir este produto?"))return;
+  const {error}=await sb.from('produtos').delete().eq('id',id);
+  if(error){toast('Erro ao excluir: '+error.message);return;}
+  DB.produtos=DB.produtos.filter(x=>x.id!==id);renderProdutos();}
+function renderProdutos(){const box=document.getElementById('lista-produtos');
+  if(DB.produtos.length===0){box.innerHTML=`<div class="empty"><h3>Nenhum produto ainda</h3><p>Clique em "Novo produto".</p></div>`;return;}
+  box.innerHTML=DB.produtos.map(p=>`<div class="list-row"><div class="info"><div class="nome">${p.nome}</div>
+    <div class="sub">${CVS5[p.categoria]?.label||'—'} · ${p.temp||''} · <b>${p.dias!=null?p.dias+' dia(s)':'sem prazo'}</b> · ${p.modo||''}${p.sif?' · '+p.sif:''}</div></div>
+    <div class="acts"><button class="icon-btn" onclick="editarProduto('${p.id}')">✏️</button>
+    <button class="icon-btn" onclick="excluirProduto('${p.id}')">🗑️</button></div></div>`).join('');}
+
+/* ===== IMPRESSÃO ===== */
+let prodAtual=null;
+let impPrep=null;
+function iniciais(nome){if(!nome)return"";return nome.trim().split(/\s+/).map(w=>w[0]||"").join("").replace(/[^A-Za-z0-9]/g,"").slice(0,3).toUpperCase();}
+function gerarLote(d,resp){const p=n=>String(n).padStart(2,'0');
+  const cod=p(d.getFullYear()%100)+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes());
+  const ini=iniciais(resp);return ini?cod+'-'+ini:cod;}
+function atualizarLoteAuto(){const c=document.getElementById('imp-lote');
+  if(c.dataset.auto!=='0'){c.value=gerarLote(impPrep||new Date(),document.getElementById('imp-resp').value);c.dataset.auto='1';}}
+function fmtDataHora(d){return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function fmtData(d){return d.toLocaleDateString('pt-BR');}
+function abrirImpressao(id){const p=DB.produtos.find(x=>x.id===id);if(!p)return;prodAtual=p;impPrep=new Date();
+  document.getElementById('imp-resp').value=DB.config.responsavel_padrao||"";
+  document.getElementById('imp-sif').value=p.sif||"";document.getElementById('imp-fab').value="";
+  const lc=document.getElementById('imp-lote');lc.dataset.auto='1';
+  document.getElementById('imp-qtd').value=1;
+  atualizarLoteAuto();renderPreview();abrirModal('modal-imprimir');}
+function calcDatas(){const prep=impPrep||new Date();const val=new Date(prep.getTime());if(prodAtual.dias!=null)val.setDate(val.getDate()+prodAtual.dias);return{prep,val};}
+function modosHTML(cls){return MODOS.map(m=>`<span class="${cls} ${m===prodAtual.modo?'on':''}">${m}</span>`).join('');}
+function renderPreview(){const {prep,val}=calcDatas();
+  const resp=document.getElementById('imp-resp').value||"—";const sif=document.getElementById('imp-sif').value||"";
+  const fabV=document.getElementById('imp-fab').value;const lote=document.getElementById('imp-lote').value||"";
+  const estab=DB.estabelecimento.nome||"";
+  const fabLinha=fabV?`<div class="lp-line"><span class="lbl">Fabricação</span><b>${fmtData(new Date(fabV+'T00:00'))}</b></div>`:"";
+  const extras=[];if(sif)extras.push(`SIF: ${sif}`);if(lote)extras.push(`Lote: ${lote}`);if(prodAtual.marca)extras.push(`${prodAtual.marca}`);
+  document.getElementById('label-preview').innerHTML=`
+    <div class="lp-prod">${prodAtual.nome}</div>
+    ${fabLinha}
+    <div class="lp-line"><span class="lbl">Manipulação</span><b>${fmtDataHora(prep)}</b></div>
+    <div class="lp-line"><span class="lbl">Validade</span><b class="lp-val">${prodAtual.dias!=null?fmtDataHora(val):'DEFINIR'}</b></div>
+    <div class="lp-modos">${modosHTML('lp-modo')}</div>
+    <div class="lp-extra"><span>Resp.: ${resp}</span>${extras.map(e=>`<span>${e}</span>`).join('')}</div>
+    <div class="lp-foot">${estab?estab+' · ':''}Ref. CVS-3/2026 (SP)</div>`;}
+document.getElementById('imp-resp').addEventListener('input',()=>{atualizarLoteAuto();renderPreview();});
+document.getElementById('imp-lote').addEventListener('input',e=>{e.target.dataset.auto='0';renderPreview();});
+['imp-sif','imp-fab'].forEach(id=>document.getElementById(id).addEventListener('input',renderPreview));
+function confirmarImpressao(){const qtd=Math.max(1,parseInt(document.getElementById('imp-qtd').value||1,10));
+  const resp=document.getElementById('imp-resp').value||"—";const sif=document.getElementById('imp-sif').value||"";
+  const fabV=document.getElementById('imp-fab').value;const lote=document.getElementById('imp-lote').value||"";
+  const {prep,val}=calcDatas();const estab=DB.estabelecimento.nome||"";
+  const fabLinha=fabV?`<div class="pa-line"><span class="l">Fabricação</span><b>${fmtData(new Date(fabV+'T00:00'))}</b></div>`:"";
+  const extras=[];if(sif)extras.push(`SIF: ${sif}`);if(lote)extras.push(`Lote: ${lote}`);if(prodAtual.marca)extras.push(prodAtual.marca);
+  document.getElementById('print-area').innerHTML=`
+    <div class="pa-prod">${prodAtual.nome}</div>
+    ${fabLinha}
+    <div class="pa-line"><span class="l">Manipulação</span><b>${fmtDataHora(prep)}</b></div>
+    <div class="pa-line"><span class="l">Validade</span><b class="pa-val">${prodAtual.dias!=null?fmtDataHora(val):'DEFINIR'}</b></div>
+    <div class="pa-modos">${modosHTML('pa-modo')}</div>
+    <div class="pa-extra"><span>Resp.: ${resp}</span>${extras.map(e=>`<span>${e}</span>`).join('')}</div>
+    <div class="pa-foot">${estab?estab+' · ':''}Ref. CVS-3/2026 (SP)</div>`;
+  registrarHistorico({produto:prodAtual.nome,resp,preparo:prep,validade:prodAtual.dias!=null?val:null,modo:prodAtual.modo,sif,lote,qtd});
+  fecharModal('modal-imprimir');
+  let i=0;const fire=()=>{if(i<qtd){i++;window.print();setTimeout(fire,400);}};fire();
+  toast(qtd>1?`Enviado: ${qtd} etiquetas`:"Etiqueta enviada para impressão");}
+
+/* ===== HISTÓRICO ===== */
+async function registrarHistorico({produto,resp,preparo,validade,modo,sif,lote,qtd}){
+  const {data,error}=await sb.from('historico_impressoes').insert({
+    org_id:ORG_ID,produto,responsavel:resp,preparo:preparo.toISOString(),
+    validade:validade?validade.toISOString():null,modo,sif,lote,qtd
+  }).select().single();
+  if(error){toast('Etiqueta impressa, mas não salvou no histórico ('+error.message+')');return;}
+  DB.historico.unshift(mapHistoricoFromDb(data));
+  if(DB.historico.length>300)DB.historico.length=300;
+  if(document.getElementById('view-historico').classList.contains('active'))renderHistorico();
+}
+function mapHistoricoFromDb(h){
+  return {id:h.id,produto:h.produto,resp:h.responsavel||"—",preparo:h.preparo,validade:h.validade,
+    modo:h.modo,sif:h.sif,lote:h.lote,qtd:h.qtd,ts:new Date(h.created_at).getTime()};
+}
+function renderHistorico(){const box=document.getElementById('lista-historico');
+  if(DB.historico.length===0){box.innerHTML=`<div class="empty" style="border:none"><h3>Sem impressões ainda</h3></div>`;return;}
+  box.innerHTML=DB.historico.map(h=>{const d=new Date(h.ts);
+    return `<div class="hist-row"><div><div class="h-prod">${h.produto}${h.qtd>1?' ×'+h.qtd:''}</div>
+    <div class="h-meta">Resp.: ${h.resp}${h.modo?' · '+h.modo:''}${h.sif?' · '+h.sif:''}</div></div>
+    <div class="h-meta">${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>`;}).join('');}
+async function limparHistorico(){if(!confirm("Limpar todo o histórico?"))return;
+  const {error}=await sb.from('historico_impressoes').delete().eq('org_id',ORG_ID);
+  if(error){toast('Erro ao limpar: '+error.message);return;}
+  DB.historico=[];renderHistorico();toast("Histórico limpo");}
+
+/* ===== CONFIG ===== */
+function carregarConfig(){document.getElementById('cfg-nome').value=DB.estabelecimento.nome||"";
+  document.getElementById('cfg-cnpj').value=DB.estabelecimento.cnpj||"";document.getElementById('cfg-resp').value=DB.config.responsavel_padrao||"";}
+async function salvarConfig(){const nome=document.getElementById('cfg-nome').value.trim();
+  const cnpj=document.getElementById('cfg-cnpj').value.trim();const resp=document.getElementById('cfg-resp').value.trim();
+  const {error}=await sb.from('organizacoes').update({nome,cnpj,responsavel_padrao:resp}).eq('id',ORG_ID);
+  if(error){toast('Erro ao salvar: '+error.message);return;}
+  DB.estabelecimento.nome=nome;DB.estabelecimento.cnpj=cnpj;DB.config.responsavel_padrao=resp;
+  toast("Configurações salvas");}
+
+function abrirModal(id){document.getElementById(id).classList.add('open');}
+function fecharModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+/* ============================================================
+   AUTENTICAÇÃO (Supabase Auth — login por email/senha)
+   Sem tela de "criar conta": as contas são criadas manualmente
+   pelo dono do negócio, direto no painel do Supabase.
+   ============================================================ */
+function mostrarTelaLogin(){document.getElementById('tela-login').classList.add('open');document.getElementById('app-root').style.display='none';}
+function mostrarApp(){document.getElementById('tela-login').classList.remove('open');document.getElementById('app-root').style.display='';}
+function mostrarLoginForm(){document.getElementById('login-form').style.display='';document.getElementById('esqueci-form').style.display='none';document.getElementById('nova-senha-form').style.display='none';}
+function mostrarEsqueciSenha(){document.getElementById('login-form').style.display='none';document.getElementById('esqueci-form').style.display='';document.getElementById('nova-senha-form').style.display='none';}
+function mostrarNovaSenha(){document.getElementById('login-form').style.display='none';document.getElementById('esqueci-form').style.display='none';document.getElementById('nova-senha-form').style.display='';}
+function loginMsg(id,texto,tipo){const el=document.getElementById(id);el.textContent=texto;el.className='login-msg'+(tipo?' '+tipo:'');}
+
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  if(!email||!senha){loginMsg('login-msg','Preencha email e senha.','err');return;}
+  loginMsg('login-msg','Entrando...','');
+  const {data,error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){loginMsg('login-msg','Não foi possível entrar. Confira email e senha.','err');return;}
+  await entrarNoApp(data.session);
+}
+async function enviarResetSenha(){
+  const email=document.getElementById('reset-email').value.trim();
+  if(!email){loginMsg('reset-msg','Informe seu email.','err');return;}
+  loginMsg('reset-msg','Enviando...','');
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split('#')[0].split('?')[0]});
+  if(error){loginMsg('reset-msg','Não foi possível enviar. Confira o email.','err');return;}
+  loginMsg('reset-msg','Se esse email existir na nossa base, enviamos um link. Confira sua caixa de entrada.','ok');
+}
+async function salvarNovaSenha(){
+  const senha=document.getElementById('nova-senha').value;
+  if(!senha||senha.length<6){loginMsg('nova-senha-msg','A senha precisa ter pelo menos 6 caracteres.','err');return;}
+  loginMsg('nova-senha-msg','Salvando...','');
+  const {error}=await sb.auth.updateUser({password:senha});
+  if(error){loginMsg('nova-senha-msg','Não foi possível salvar. Peça um novo link em "Esqueci minha senha".','err');return;}
+  try{history.replaceState(null,'',window.location.pathname);}catch(e){}
+  toast('Senha atualizada.');
+  const {data:{session}}=await sb.auth.getSession();
+  await entrarNoApp(session);
+}
+async function fazerLogout(){
+  if(!confirm('Sair da conta?'))return;
+  await sb.auth.signOut();
+  ORG_ID=null;USER_ID=null;
+  DB={estabelecimento:{nome:"",cnpj:""},config:{responsavel_padrao:""},produtos:[],historico:[]};
+  document.getElementById('login-email').value='';document.getElementById('login-senha').value='';
+  mostrarLoginForm();mostrarTelaLogin();
+}
+async function entrarNoApp(session){
+  if(!session){mostrarLoginForm();mostrarTelaLogin();return;}
+  USER_ID=session.user.id;
+  const {data:perfil,error}=await sb.from('perfis').select('org_id,nome').eq('id',USER_ID).single();
+  if(error||!perfil){
+    loginMsg('login-msg','Sua conta ainda não está vinculada a nenhum restaurante. Fale com o suporte.','err');
+    await sb.auth.signOut();mostrarLoginForm();mostrarTelaLogin();return;
+  }
+  ORG_ID=perfil.org_id;
+  await carregarTudo();
+  mostrarApp();
+  carregarConfig();renderGrid();renderProdutos();renderHistorico();
+}
+async function carregarTudo(){
+  const [orgRes,prodRes,histRes]=await Promise.all([
+    sb.from('organizacoes').select('*').eq('id',ORG_ID).single(),
+    sb.from('produtos').select('*').eq('org_id',ORG_ID).order('nome'),
+    sb.from('historico_impressoes').select('*').eq('org_id',ORG_ID).order('created_at',{ascending:false}).limit(300)
+  ]);
+  const org=orgRes.data;
+  DB.estabelecimento={nome:org?.nome||"",cnpj:org?.cnpj||""};
+  DB.config={responsavel_padrao:org?.responsavel_padrao||""};
+  DB.produtos=prodRes.data||[];
+  DB.historico=(histRes.data||[]).map(mapHistoricoFromDb);
+}
+function isRecoveryUrl(){
+  const h=window.location.hash||"";const q=window.location.search||"";
+  return h.includes('type=recovery')||q.includes('type=recovery');
+}
+async function initAuth(){
+  let modoRecuperacao=isRecoveryUrl();
+  sb.auth.onAuthStateChange((event)=>{
+    if(event==='PASSWORD_RECOVERY'){modoRecuperacao=true;mostrarNovaSenha();mostrarTelaLogin();}
+  });
+  const {data:{session}}=await sb.auth.getSession();
+  if(modoRecuperacao){mostrarNovaSenha();mostrarTelaLogin();return;}
+  await entrarNoApp(session);
+}
+initAuth();
+</script>
+</body>
+</html>
