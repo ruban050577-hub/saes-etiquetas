@@ -924,8 +924,7 @@ function etiquetaHTML(pfx, dados){
     '<div class="' + pfx + '-foot">' + esc(dados.rodape) + '</div>';
 }
 function rodape(){
-  const e = DB.estabelecimento.nome;
-  return (e ? e + ' · ' : '') + 'Ref. CVS-3/2026 (SP)';
+  return DB.estabelecimento.nome || "Saes Food Lab";
 }
 
 /* ===================== IMPRIMIR PRODUTO ===================== */
