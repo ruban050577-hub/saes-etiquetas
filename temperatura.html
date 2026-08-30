@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Temperatura — Saes Food Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600;6..96,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/ui.css">
+<link rel="stylesheet" href="shared/temperatura.css">
+</head>
+<body>
+
+<div class="app" id="app-root" style="display:none;">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 26 34" fill="none" stroke="#2A5B73" stroke-width="1.1" stroke-linecap="round">
+          <path d="M16.4 21.3V5.2c0-1.8-1.5-3.2-3.4-3.2S9.6 3.4 9.6 5.2v16.1a6.5 6.5 0 1 0 6.8 0Z"/>
+          <path d="M13 8.8v14.6" stroke-width=".85"/>
+          <circle cx="13" cy="26.9" r="2.9" fill="#2A5B73" stroke="none"/>
+          <path d="M19.4 7.2h2.8M19.4 11.4h2.8M19.4 15.6h2.8" stroke-width=".85"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Temperatura</h1>
+        <small>Saes Food Lab</small>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <nav class="tabs">
+        <button class="tab-btn active" data-view="rodada">Rodada</button>
+        <button class="tab-btn" data-view="hoje">Hoje</button>
+        <button class="tab-btn" data-view="historico">Histórico</button>
+        <button class="tab-btn" data-view="pontos">Pontos</button>
+      </nav>
+      <button class="icon-btn" title="Voltar ao menu" onclick="location.href='menu.html'">☰</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ================= RODADA ================= -->
+    <section class="view active" id="view-rodada">
+      <div id="rodada-conteudo"></div>
+    </section>
+
+    <!-- ================= HOJE ================= -->
+    <section class="view" id="view-hoje">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Art. 48 — CVS-3/2026</div>
+          <h2>Hoje</h2>
+          <p>A norma pede no mínimo duas medições por dia. Um dia sem registro é infração,
+             mesmo com o equipamento funcionando bem.</p>
+        </div>
+      </div>
+      <div id="hoje-conteudo"></div>
+    </section>
+
+    <!-- ================= HISTÓRICO ================= -->
+    <section class="view" id="view-historico">
+      <div class="section-head">
+        <div>
+          <h2>Histórico</h2>
+          <p>Últimos 30 dias. Registro sanitário não se edita nem se apaga —
+             para corrigir, faça uma nova leitura.</p>
+        </div>
+      </div>
+      <div class="searchbar">
+        <select id="filtro-ponto" style="flex:1;min-width:190px;font-family:inherit;font-size:16px;
+          background:var(--card);border:1px solid var(--rule-2);color:var(--ink);padding:13px 15px;border-radius:10px;">
+          <option value="">Todos os pontos</option>
+        </select>
+      </div>
+      <div id="historico-conteudo"></div>
+    </section>
+
+    <!-- ================= PONTOS ================= -->
+    <section class="view" id="view-pontos">
+      <div class="section-head">
+        <div>
+          <h2>Pontos de medição</h2>
+          <p>Sanitário entra na rodada obrigatória. Operacional fica de fora — é monitorado
+             por escolha sua, não por exigência da norma.</p>
+        </div>
+        <button class="btn btn-primary" onclick="abrirPonto()">Novo ponto</button>
+      </div>
+      <div id="pontos-conteudo"></div>
+      <div class="note">
+        <b>Por que a separação.</b> Bebida industrializada lacrada não é alvo do Art. 48.
+        Cobrar os mesmos registros para ela aumenta a carga de trabalho sem ganho sanitário,
+        e a rodada acaba sendo abandonada no meio. Os pontos operacionais existem para você
+        acompanhar perda de produto e quebra de equipamento.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ MODAL: PONTO ============ -->
+<div class="overlay" id="m-ponto">
+  <div class="modal">
+    <h3 id="mp-titulo">Novo ponto</h3>
+    <p class="hint">Onde a temperatura é medida. A faixa esperada vem da norma, e você pode
+      sobrescrever com a faixa do fabricante do equipamento.</p>
+
+    <div class="field"><label>Nome</label>
+      <input type="text" id="p-nome" placeholder="Freezer vertical 5"></div>
+    <div class="field"><label>Área</label>
+      <select id="p-area-sel" onchange="trocarArea()"></select>
+      <input type="text" id="p-area" placeholder="Nome da nova área" style="margin-top:9px;display:none;"></div>
+
+    <div class="field"><label>Criticidade</label>
+      <select id="p-criticidade">
+        <option value="SANITARIO">Sanitário — entra na rodada obrigatória</option>
+        <option value="OPERACIONAL">Operacional — fora da rodada</option>
+      </select></div>
+
+    <div class="field"><label>Regime</label>
+      <select id="p-regime">
+        <option value="EQUIPAMENTO">Equipamento</option>
+        <option value="ARMAZENAMENTO">Armazenamento</option>
+        <option value="EXPOSICAO">Exposição</option>
+        <option value="RECEBIMENTO">Recebimento</option>
+      </select></div>
+
+    <div class="field"><label>Faixa da norma</label>
+      <select id="p-standard"><option value="">Sem faixa da norma — defino abaixo</option></select></div>
+    <div class="help" id="p-std-info"></div>
+
+    <div class="field"><label>Faixa do fabricante <span class="opt">OPCIONAL — PREVALECE SOBRE A NORMA</span></label>
+      <div class="cols">
+        <input type="number" step="0.1" id="p-min" placeholder="mínimo °C">
+        <input type="number" step="0.1" id="p-max" placeholder="máximo °C">
+      </div></div>
+
+    <div class="field"><label>Ordem na rodada</label>
+      <input type="number" id="p-ordem" placeholder="1"></div>
+    <div class="help">Siga o caminho que você faz a pé pela cozinha. Isso é o que segura o tempo da rodada.</div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fechar('m-ponto')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarPonto()">Salvar</button>
+    </div>
+    <div style="margin-top:12px;text-align:center;" id="mp-desativar"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="shared/supabase.js"></script>
+<script src="shared/org.js"></script>
+<script>
+/* ============================================================
+   TEMPERATURA — Fase 9-A
+   O banco é a autoridade: status, hora e snapshots vêm de lá.
+   O que este arquivo faz é só apresentar e coletar.
+   ============================================================ */
+
+let PONTOS = [];      // pontos ativos, com a faixa já resolvida
+let NORMAS = [];      // temperature_standards
+let RODADAS_HOJE = [];
+let LEITURAS = [];    // últimos 30 dias
+let pontoEditando = null;
+
+/* estado da rodada em andamento */
+let RD = null;        // { id, fila:[], i:0 }
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600); }
+function abrir(id){ document.getElementById(id).classList.add('open'); }
+function fechar(id){ document.getElementById(id).classList.remove('open'); }
+
+function fmtHora(d){ return new Date(d).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function fmtData(d){ return new Date(d).toLocaleDateString('pt-BR'); }
+function n1(v){ return (Math.round(v*10)/10).toString().replace('.',','); }
+
+/* ---------- faixa efetiva: override do fabricante prevalece,
+     campo a campo, sobre a norma (Art. 44 caput) ---------- */
+function faixaDoPonto(p){
+  const s = p.temperature_standards || null;
+  const min = p.temp_min != null ? p.temp_min : (s ? s.temp_min : null);
+  const max = p.temp_max != null ? p.temp_max : (s ? s.temp_max : null);
+  let fonte;
+  if(!s) fonte = 'Faixa definida pelo estabelecimento';
+  else if(p.temp_min == null && p.temp_max == null) fonte = s.norma + ' ' + s.artigo;
+  else fonte = s.norma + ' ' + s.artigo + ' (faixa do fabricante)';
+  return {min, max, fonte};
+}
+function faixaTexto(f){
+  if(f.min != null && f.max != null) return 'entre ' + n1(f.min) + ' e ' + n1(f.max) + ' °C';
+  if(f.max != null) return n1(f.max) + ' °C ou menos';
+  if(f.min != null) return n1(f.min) + ' °C ou mais';
+  return 'sem faixa definida';
+}
+/* pré-avaliação só para a tela. Quem decide de verdade é o
+   trigger no banco — se divergir, o banco recusa o registro. */
+function avaliar(temp, f){
+  let desvio = 0;
+  if(f.min != null && temp < f.min) desvio = f.min - temp;
+  if(f.max != null && temp > f.max) desvio = Math.max(desvio, temp - f.max);
+  if(desvio === 0) return 'OK';
+  return desvio <= 2 ? 'ALERTA' : 'CRITICO';
+}
+function turnoAgora(){
+  const h = new Date().getHours();
+  if(h < 12) return 'MANHA';
+  if(h < 18) return 'TARDE';
+  return 'NOITE';
+}
+function rotuloTurno(t){
+  return {MANHA:'Manhã', TARDE:'Tarde', NOITE:'Noite', EXTRA:'Extra'}[t] || t;
+}
+
+/* ===================== NAVEGAÇÃO ===================== */
+document.querySelectorAll('.tab-btn').forEach(b =>
+  b.addEventListener('click', () => trocarView(b.dataset.view)));
+
+function trocarView(v){
+  if(RD && v !== 'rodada' && !confirm('A rodada está em andamento. Sair agora deixa ela incompleta. Continuar?')) return;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  document.querySelectorAll('.view').forEach(s => s.classList.toggle('active', s.id === 'view-' + v));
+  if(v === 'hoje')      renderHoje();
+  if(v === 'historico') renderHistorico();
+  if(v === 'pontos')    renderPontos();
+}
+
+/* ===================== CARGA ===================== */
+async function carregarTudo(){
+  const desde = new Date(Date.now() - 30*864e5).toISOString();
+  const hoje0 = new Date(); hoje0.setHours(0,0,0,0);
+
+  const [pRes, nRes, rRes, lRes] = await Promise.all([
+    sb.from('temperature_points')
+      .select('*, temperature_standards(norma,artigo,temp_min,temp_max,categoria)')
+      .eq('org_id',ORG_ID).eq('ativo',true).order('ordem_rodada'),
+    sb.from('temperature_standards').select('*').order('artigo').order('categoria'),
+    sb.from('temperature_rounds').select('*').eq('org_id',ORG_ID)
+      .gte('iniciada_em',hoje0.toISOString()).order('iniciada_em',{ascending:false}),
+    sb.from('temperature_readings').select('*').eq('org_id',ORG_ID)
+      .gte('registrado_em',desde).order('registrado_em',{ascending:false}).limit(1000)
+  ]);
+  PONTOS = pRes.data || [];
+  NORMAS = nRes.data || [];
+  RODADAS_HOJE = rRes.data || [];
+  LEITURAS = lRes.data || [];
+}
+function pontoPorId(id){ return PONTOS.find(p => p.id === id); }
+function sanitarios(){ return PONTOS.filter(p => p.criticidade === 'SANITARIO'); }
+
+/* ===================== RODADA ===================== */
+function renderRodada(){
+  const box = document.getElementById('rodada-conteudo');
+  if(RD) return renderPassoDaRodada();
+
+  const alvo = sanitarios();
+  const feitas = RODADAS_HOJE.filter(r => r.status === 'COMPLETA').length;
+
+  if(alvo.length === 0){
+    box.innerHTML = '<div class="empty"><h3>Nenhum ponto sanitário cadastrado</h3>' +
+      '<p>Cadastre os equipamentos na aba Pontos para começar a registrar.</p>' +
+      '<button class="btn btn-primary" onclick="trocarView(\'pontos\')">Ir para Pontos</button></div>';
+    return;
+  }
+
+  box.innerHTML =
+    '<div class="section-head"><div>' +
+      '<div class="eyebrow">Turno da ' + esc(rotuloTurno(turnoAgora())).toLowerCase() + '</div>' +
+      '<h2>Rodada de medição</h2>' +
+      '<p>' + alvo.length + ' pontos, na ordem do caminho pela cozinha. ' +
+      'Você registra um por tela e ela avança sozinha.</p>' +
+    '</div></div>' +
+    '<div class="meta">' +
+      '<div class="meta-card ' + (feitas >= 2 ? 'feito' : '') + '"><div class="lbl">Rodadas hoje</div>' +
+        '<div class="num">' + feitas + ' <span style="font-size:17px;color:var(--ink-3)">/ 2</span></div>' +
+        '<div class="sub">Mínimo exigido pelo Art. 48</div></div>' +
+      '<div class="meta-card"><div class="lbl">Pontos nesta rodada</div>' +
+        '<div class="num">' + alvo.length + '</div>' +
+        '<div class="sub">Só os sanitários</div></div>' +
+    '</div>' +
+    '<button class="btn btn-primary btn-block" style="font-size:17px;padding:18px;" onclick="iniciarRodada()">Iniciar rodada</button>';
+}
+
+async function iniciarRodada(){
+  const fila = sanitarios();
+  if(fila.length === 0){ toast('Nenhum ponto sanitário ativo.'); return; }
+
+  const {data,error} = await sb.from('temperature_rounds').insert({
+    org_id: ORG_ID,
+    turno: turnoAgora(),
+    pontos_esperados: fila.length      // snapshot: ponto novo no meio não muda a meta de hoje
+  }).select().single();
+
+  if(error){ toast('Não foi possível iniciar: ' + error.message); return; }
+  RD = { id:data.id, fila, i:0 };
+  RODADAS_HOJE.unshift(data);
+  renderPassoDaRodada();
+}
+
+function renderPassoDaRodada(){
+  const box = document.getElementById('rodada-conteudo');
+  const p = RD.fila[RD.i];
+
+  if(!p) return finalizarRodada();
+
+  const f = faixaDoPonto(p);
+  const pct = Math.round((RD.i / RD.fila.length) * 100);
+
+  box.innerHTML =
+    '<div class="rodada">' +
+      '<div class="rd-topo">' +
+        '<span class="rd-contador">Ponto ' + (RD.i+1) + ' de ' + RD.fila.length + '</span>' +
+        '<button class="btn btn-ghost btn-sm" onclick="abandonarRodada()">Interromper</button>' +
+      '</div>' +
+      '<div class="rd-barra"><i style="width:' + pct + '%"></i></div>' +
+
+      '<div class="rd-ponto">' +
+        (p.area ? '<div class="rd-area">' + esc(p.area) + '</div>' : '') +
+        '<h2 class="rd-nome">' + esc(p.nome) + '</h2>' +
+
+        '<div class="rd-faixa">' +
+          '<div class="lbl">Faixa esperada</div>' +
+          '<div class="val">' + faixaTexto(f) + '</div>' +
+          '<div class="fonte">' + esc(f.fonte) + '</div>' +
+        '</div>' +
+
+        '<input class="rd-input" id="rd-temp" type="number" step="0.1" inputmode="decimal" ' +
+          'placeholder="0,0" autocomplete="off">' +
+        '<div class="rd-unidade">Graus Celsius</div>' +
+
+        '<div id="rd-retorno"></div>' +
+      '</div>' +
+
+      '<div class="rd-rodape">' +
+        '<button class="btn btn-primary btn-block" id="rd-confirmar" onclick="confirmarLeitura()">Confirmar e avançar</button>' +
+      '</div>' +
+    '</div>';
+
+  const input = document.getElementById('rd-temp');
+  input.addEventListener('input', avaliarNaTela);
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') confirmarLeitura(); });
+  input.focus();
+}
+
+function avaliarNaTela(){
+  const p = RD.fila[RD.i];
+  const f = faixaDoPonto(p);
+  const box = document.getElementById('rd-retorno');
+  const bruto = document.getElementById('rd-temp').value;
+
+  if(bruto === ''){ box.innerHTML = ''; return; }
+  const st = avaliar(parseFloat(bruto), f);
+  if(st === 'OK'){ box.innerHTML = ''; return; }
+
+  // se já existe caixa de ação corretiva preenchida, não apaga o texto
+  const anterior = document.getElementById('rd-acao') ? document.getElementById('rd-acao').value : '';
+  const critico = st === 'CRITICO';
+
+  box.innerHTML =
+    '<div class="rd-aviso ' + (critico ? 'critico' : 'alerta') + '">' +
+      (critico ? 'Fora da faixa — desvio alto.' : 'Fora da faixa.') +
+      ' O esperado é ' + faixaTexto(f) + '.' +
+    '</div>' +
+    '<div class="rd-acao">' +
+      '<label>Ação corretiva — obrigatória</label>' +
+      '<textarea id="rd-acao" placeholder="O que foi feito? Ex.: produto transferido para o freezer 2 e equipamento em manutenção."></textarea>' +
+    '</div>';
+  if(anterior) document.getElementById('rd-acao').value = anterior;
+}
+
+async function confirmarLeitura(){
+  const btn = document.getElementById('rd-confirmar');
+  const p = RD.fila[RD.i];
+  const f = faixaDoPonto(p);
+  const bruto = document.getElementById('rd-temp').value;
+
+  if(bruto === ''){ toast('Informe a temperatura.'); document.getElementById('rd-temp').focus(); return; }
+  const temp = parseFloat(bruto);
+  if(isNaN(temp)){ toast('Temperatura inválida.'); return; }
+
+  const st = avaliar(temp, f);
+  const campoAcao = document.getElementById('rd-acao');
+  const acao = campoAcao ? campoAcao.value.trim() : '';
+
+  if(st !== 'OK' && !acao){
+    toast('Descreva a ação corretiva antes de avançar.');
+    if(campoAcao) campoAcao.focus();
+    return;
+  }
+
+  btn.disabled = true;
+  // status, hora, org e snapshots são preenchidos pelo trigger no banco
+  const {error} = await sb.from('temperature_readings').insert({
+    org_id: ORG_ID,
+    round_id: RD.id,
+    point_id: p.id,
+    temperatura: temp,
+    acao_corretiva: acao || null
+  });
+  btn.disabled = false;
+
+  if(error){ toast('Não gravou: ' + error.message); return; }
+
+  RD.i++;
+  if(RD.i >= RD.fila.length) return finalizarRodada();
+  renderPassoDaRodada();
+}
+
+function abandonarRodada(){
+  if(!confirm('Interromper a rodada? Os pontos já registrados ficam salvos, e a rodada fica marcada como incompleta.')) return;
+  sb.from('temperature_rounds').update({status:'INCOMPLETA', finalizada_em:new Date().toISOString()})
+    .eq('id',RD.id).eq('org_id',ORG_ID).then(()=>{});
+  RD = null;
+  recarregarERenderizar();
+}
+
+async function finalizarRodada(){
+  const total = RD.fila.length;
+  RD = null;
+  await carregarTudo();
+  toast(total + ' pontos registrados.');
+  const box = document.getElementById('rodada-conteudo');
+  const feitas = RODADAS_HOJE.filter(r => r.status === 'COMPLETA').length;
+  box.innerHTML =
+    '<div class="empty" style="border-style:solid;border-color:var(--rule);background:var(--card);">' +
+      '<h3>Rodada concluída</h3>' +
+      '<p>' + total + ' pontos registrados. Hoje já são ' + feitas + ' de 2 rodadas exigidas pelo Art. 48.</p>' +
+      '<button class="btn btn-primary" onclick="renderRodada()">Voltar</button> ' +
+      '<button class="btn btn-ghost" onclick="trocarView(\'hoje\')">Ver o dia</button>' +
+    '</div>';
+}
+
+async function recarregarERenderizar(){
+  await carregarTudo();
+  renderRodada();
+}
+
+/* ===================== HOJE ===================== */
+function renderHoje(){
+  const box = document.getElementById('hoje-conteudo');
+  const completas = RODADAS_HOJE.filter(r => r.status === 'COMPLETA');
+  const hoje0 = new Date(); hoje0.setHours(0,0,0,0);
+  const leiturasHoje = LEITURAS.filter(l => new Date(l.registrado_em) >= hoje0);
+  const fora = leiturasHoje.filter(l => l.status !== 'OK');
+
+  let html =
+    '<div class="meta">' +
+      '<div class="meta-card ' + (completas.length >= 2 ? 'feito' : 'falta') + '">' +
+        '<div class="lbl">Rodadas completas</div>' +
+        '<div class="num">' + completas.length + ' <span style="font-size:17px;color:var(--ink-3)">/ 2</span></div>' +
+        '<div class="sub">' + (completas.length >= 2 ? 'Mínimo do Art. 48 atendido' : 'Ainda falta registrar') + '</div></div>' +
+      '<div class="meta-card"><div class="lbl">Leituras hoje</div>' +
+        '<div class="num">' + leiturasHoje.length + '</div>' +
+        '<div class="sub">Em todas as rodadas do dia</div></div>' +
+      '<div class="meta-card ' + (fora.length ? 'falta' : '') + '"><div class="lbl">Fora da faixa</div>' +
+        '<div class="num">' + fora.length + '</div>' +
+        '<div class="sub">' + (fora.length ? 'Com ação corretiva registrada' : 'Nenhuma ocorrência') + '</div></div>' +
+    '</div>';
+
+  if(RODADAS_HOJE.length === 0){
+    html += '<div class="empty"><h3>Nenhuma rodada hoje</h3>' +
+      '<p>Um dia sem registro é infração, mesmo com todos os equipamentos funcionando bem.</p>' +
+      '<button class="btn btn-primary" onclick="trocarView(\'rodada\')">Iniciar rodada</button></div>';
+    box.innerHTML = html;
+    return;
+  }
+
+  html += '<div class="eyebrow" style="margin-top:26px;">Rodadas de hoje</div>';
+
+  RODADAS_HOJE.forEach(r => {
+    const doRound = LEITURAS.filter(l => l.round_id === r.id);
+    const faltando = sanitarios().filter(p => !doRound.some(l => l.point_id === p.id));
+    const rotulo = r.status === 'COMPLETA' ? 'pill-ok' : (r.status === 'INCOMPLETA' ? 'pill-critico' : 'pill-alerta');
+    const txt = r.status === 'COMPLETA' ? 'completa' : (r.status === 'INCOMPLETA' ? 'incompleta' : 'em andamento');
+
+    html += '<div class="row"><div class="info">' +
+      '<div class="nome">' + rotuloTurno(r.turno) + ' · ' + fmtHora(r.iniciada_em) + '</div>' +
+      '<div class="sub">' + r.pontos_registrados + ' de ' + r.pontos_esperados + ' pontos' +
+        (faltando.length && r.status !== 'COMPLETA'
+          ? ' · faltou: ' + faltando.map(p => esc(p.nome)).join(', ')
+          : '') +
+      '</div></div>' +
+      '<span class="pill ' + rotulo + '">' + txt + '</span></div>';
+  });
+
+  if(fora.length){
+    html += '<div class="eyebrow" style="margin-top:26px;">Ocorrências de hoje</div><div class="hist">';
+    fora.forEach(l => html += linhaLeitura(l));
+    html += '</div>';
+  }
+  box.innerHTML = html;
+}
+
+/* ===================== HISTÓRICO ===================== */
+function linhaLeitura(l){
+  const p = pontoPorId(l.point_id);
+  const cls = l.status === 'OK' ? 'st-ok' : (l.status === 'ALERTA' ? 'st-alerta' : 'st-critico');
+  const faixa = (l.temp_min_snapshot != null && l.temp_max_snapshot != null)
+      ? 'entre ' + n1(l.temp_min_snapshot) + ' e ' + n1(l.temp_max_snapshot) + ' °C'
+      : (l.temp_max_snapshot != null ? n1(l.temp_max_snapshot) + ' °C ou menos'
+        : (l.temp_min_snapshot != null ? n1(l.temp_min_snapshot) + ' °C ou mais' : 'sem faixa'));
+
+  return '<div class="leitura"><div class="info">' +
+    '<div class="nome">' + esc(p ? p.nome : 'Ponto removido') + '</div>' +
+    '<div class="meta-txt">' + fmtData(l.registrado_em) + ' · ' + fmtHora(l.registrado_em) +
+      ' · esperado ' + faixa + ' · ' + esc(l.standard_snapshot) +
+      (l.acao_corretiva ? '<br><b>Ação:</b> ' + esc(l.acao_corretiva) : '') +
+    '</div></div>' +
+    '<div class="temp ' + cls + '">' + n1(l.temperatura) + '°</div></div>';
+}
+
+function renderHistorico(){
+  const sel = document.getElementById('filtro-ponto');
+  if(sel.options.length <= 1){
+    PONTOS.forEach(p => {
+      const o = document.createElement('option'); o.value = p.id; o.textContent = p.nome; sel.appendChild(o);
+    });
+    sel.addEventListener('change', renderHistorico);
+  }
+  const filtro = sel.value;
+  const lista = filtro ? LEITURAS.filter(l => l.point_id === filtro) : LEITURAS;
+  const box = document.getElementById('historico-conteudo');
+
+  if(lista.length === 0){
+    box.innerHTML = '<div class="empty"><h3>Nada registrado</h3><p>As leituras dos últimos 30 dias aparecem aqui.</p></div>';
+    return;
+  }
+  box.innerHTML = '<div class="hist">' + lista.map(linhaLeitura).join('') + '</div>';
+}
+
+/* ===================== PONTOS ===================== */
+function renderPontos(){
+  const box = document.getElementById('pontos-conteudo');
+  if(PONTOS.length === 0){
+    box.innerHTML = '<div class="empty"><h3>Nenhum ponto cadastrado</h3>' +
+      '<p>Cadastre cada equipamento que precisa ser medido.</p>' +
+      '<button class="btn btn-primary" onclick="abrirPonto()">Novo ponto</button></div>';
+    return;
+  }
+  const grupo = c => PONTOS.filter(p => p.criticidade === c);
+  let html = '';
+  [['SANITARIO','Sanitários — na rodada obrigatória'],
+   ['OPERACIONAL','Operacionais — fora da rodada']].forEach(([c,titulo]) => {
+    const lista = grupo(c);
+    if(!lista.length) return;
+    html += '<div class="eyebrow" style="margin-top:22px;">' + titulo + '</div>';
+    lista.forEach((p, idx) => {
+      const f = faixaDoPonto(p);
+      html += '<div class="row">' +
+        '<div class="setas">' +
+          '<button class="icon-btn seta" title="Subir" ' + (idx === 0 ? 'disabled' : '') +
+            ' onclick="moverPonto(\'' + p.id + '\',-1)">↑</button>' +
+          '<button class="icon-btn seta" title="Descer" ' + (idx === lista.length-1 ? 'disabled' : '') +
+            ' onclick="moverPonto(\'' + p.id + '\',1)">↓</button>' +
+        '</div>' +
+        '<span class="ordem">' + (idx+1) + '</span>' +
+        '<div class="info"><div class="nome">' + esc(p.nome) + '</div>' +
+        '<div class="sub">' + esc(p.area || 'sem área') + ' · ' + faixaTexto(f) + ' · ' + esc(f.fonte) + '</div></div>' +
+        '<div class="acts"><button class="icon-btn" title="Editar" onclick="abrirPonto(\'' + p.id + '\')">✎</button></div>' +
+      '</div>';
+    });
+  });
+  box.innerHTML = html;
+}
+
+/* Troca o ponto de lugar com o vizinho, dentro do mesmo grupo de
+   criticidade. Reescreve a ordem do grupo inteiro em sequência, então
+   nunca sobram números repetidos nem buracos. */
+async function moverPonto(id, direcao){
+  const p = pontoPorId(id);
+  if(!p) return;
+  const grupo = PONTOS.filter(x => x.criticidade === p.criticidade)
+                      .sort((a,b) => a.ordem_rodada - b.ordem_rodada);
+  const i = grupo.findIndex(x => x.id === id);
+  const j = i + direcao;
+  if(j < 0 || j >= grupo.length) return;
+
+  grupo.splice(j, 0, grupo.splice(i, 1)[0]);
+
+  // pontos operacionais ficam sempre depois dos sanitários na numeração
+  const base = p.criticidade === 'SANITARIO'
+    ? 0
+    : PONTOS.filter(x => x.criticidade === 'SANITARIO').length;
+
+  document.querySelectorAll('.seta').forEach(b => b.disabled = true);
+  const erros = [];
+  for(let k = 0; k < grupo.length; k++){
+    const nova = base + k + 1;
+    if(grupo[k].ordem_rodada === nova) continue;
+    const {error} = await sb.from('temperature_points')
+      .update({ordem_rodada: nova}).eq('id', grupo[k].id).eq('org_id', ORG_ID);
+    if(error) erros.push(error.message);
+  }
+  if(erros.length){ toast('Não reordenou: ' + erros[0]); }
+  await carregarTudo();
+  renderPontos();
+}
+
+function abrirPonto(id){
+  pontoEditando = id ? pontoPorId(id) : null;
+  const p = pontoEditando;
+  document.getElementById('mp-titulo').textContent = p ? 'Editar ponto' : 'Novo ponto';
+
+  const sel = document.getElementById('p-standard');
+  sel.innerHTML = '<option value="">Sem faixa da norma — defino abaixo</option>';
+  NORMAS.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = s.artigo + ' — ' + s.categoria;
+    sel.appendChild(o);
+  });
+
+  document.getElementById('p-nome').value        = p ? p.nome : '';
+  montarAreas(p ? p.area : 'Cozinha');
+  document.getElementById('p-criticidade').value = p ? p.criticidade : 'SANITARIO';
+  document.getElementById('p-regime').value      = p ? p.regime : 'EQUIPAMENTO';
+  document.getElementById('p-standard').value    = p ? (p.standard_id || '') : '';
+  document.getElementById('p-min').value         = p && p.temp_min != null ? p.temp_min : '';
+  document.getElementById('p-max').value         = p && p.temp_max != null ? p.temp_max : '';
+  document.getElementById('p-ordem').value       = p ? p.ordem_rodada : (PONTOS.length + 1);
+
+  document.getElementById('mp-desativar').innerHTML = p
+    ? '<button class="link-btn" onclick="desativarPonto()">Desativar este ponto</button>'
+    : '';
+
+  mostrarInfoNorma();
+  abrir('m-ponto');
+}
+
+/* As áreas não são um cadastro: são as que já existem nos pontos.
+   Vira lista para "Cozinha" e "cozinha" não virarem dois setores
+   diferentes no relatório — erro que só aparece tarde e caro. */
+function areasExistentes(){
+  const set = new Set();
+  PONTOS.forEach(p => { if(p.area && p.area.trim()) set.add(p.area.trim()); });
+  return [...set].sort((a,b) => a.localeCompare(b,'pt-BR'));
+}
+function montarAreas(atual){
+  const sel = document.getElementById('p-area-sel');
+  const livre = document.getElementById('p-area');
+  const areas = areasExistentes();
+  if(atual && !areas.includes(atual)) areas.push(atual);
+
+  sel.innerHTML = '';
+  areas.forEach(a => {
+    const o = document.createElement('option'); o.value = a; o.textContent = a; sel.appendChild(o);
+  });
+  const nova = document.createElement('option');
+  nova.value = '__nova__'; nova.textContent = '+ Nova área…';
+  sel.appendChild(nova);
+
+  if(areas.length === 0){ sel.value = '__nova__'; } else { sel.value = atual || areas[0]; }
+  trocarArea();
+}
+function trocarArea(){
+  const sel = document.getElementById('p-area-sel');
+  const livre = document.getElementById('p-area');
+  const criando = sel.value === '__nova__';
+  livre.style.display = criando ? '' : 'none';
+  if(criando){ livre.value = ''; livre.focus(); }
+}
+function areaEscolhida(){
+  const sel = document.getElementById('p-area-sel');
+  if(sel.value === '__nova__') return document.getElementById('p-area').value.trim() || null;
+  return sel.value || null;
+}
+
+function mostrarInfoNorma(){
+  const id = document.getElementById('p-standard').value;
+  const s = NORMAS.find(x => x.id === id);
+  document.getElementById('p-std-info').textContent = s
+    ? (s.norma + ' ' + s.artigo + ' — ' + faixaTexto({min:s.temp_min, max:s.temp_max}))
+    : 'Sem norma escolhida, preencha a faixa do fabricante abaixo.';
+}
+document.getElementById('p-standard').addEventListener('change', mostrarInfoNorma);
+
+async function salvarPonto(){
+  const nome = document.getElementById('p-nome').value.trim();
+  if(!nome){ toast('Informe o nome do ponto.'); return; }
+
+  const std = document.getElementById('p-standard').value || null;
+  const minTxt = document.getElementById('p-min').value;
+  const maxTxt = document.getElementById('p-max').value;
+  const min = minTxt === '' ? null : parseFloat(minTxt);
+  const max = maxTxt === '' ? null : parseFloat(maxTxt);
+
+  if(!std && min == null && max == null){
+    toast('Escolha uma faixa da norma ou informe a faixa do fabricante.');
+    return;
+  }
+
+  const dados = {
+    nome,
+    area: areaEscolhida(),
+    criticidade: document.getElementById('p-criticidade').value,
+    regime: document.getElementById('p-regime').value,
+    standard_id: std,
+    temp_min: min,
+    temp_max: max,
+    ordem_rodada: parseInt(document.getElementById('p-ordem').value || 0, 10)
+  };
+
+  const q = pontoEditando
+    ? sb.from('temperature_points').update(dados).eq('id',pontoEditando.id).eq('org_id',ORG_ID)
+    : sb.from('temperature_points').insert({...dados, org_id:ORG_ID});
+
+  const {error} = await q;
+  if(error){ toast('Não salvou: ' + error.message); return; }
+
+  fechar('m-ponto');
+  toast(pontoEditando ? 'Ponto atualizado.' : 'Ponto criado.');
+  await carregarTudo();
+  renderPontos();
+}
+
+/* Ponto não se apaga: as leituras antigas apontam para ele e o
+   registro precisa continuar legível pelos 180 dias do Art. 181. */
+async function desativarPonto(){
+  if(!pontoEditando) return;
+  if(!confirm('Desativar "' + pontoEditando.nome + '"? Ele sai da rodada, mas as leituras antigas continuam no histórico.')) return;
+  const {error} = await sb.from('temperature_points').update({ativo:false})
+    .eq('id',pontoEditando.id).eq('org_id',ORG_ID);
+  if(error){ toast('Não foi possível: ' + error.message); return; }
+  fechar('m-ponto');
+  toast('Ponto desativado.');
+  await carregarTudo();
+  renderPontos();
+}
+
+/* ===================== ENTRADA ===================== */
+(async function(){
+  const sessao = await exigirSessao('index.html');
+  if(!sessao) return;
+  await carregarTudo();
+  document.getElementById('app-root').style.display = 'flex';
+  renderRodada();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+/* ============================================================
+   SAES FOOD LAB — TOKENS E COMPONENTES COMUNS
+   Compartilhado por: index.html (Etiquetas) e temperatura.html
+   Extraído do <style> do index.html sem alteração de valores.
+
+   COR DE ACENTO: cada página sobrescreve --acento no seu topo.
+   Etiquetas mantém o preto-tinta; Temperatura usa o azul-petróleo.
+   ============================================================ */
+
+/* ============================================================
+   SAES FOOD LAB — Etiquetas de Validade  (v3)
+   Modelo: produto -> N métodos de conservação (prazo por método)
+   Métodos são cadastro editável. Base: Portaria CVS-3/2026 (SP).
+   Dados em Supabase (login por email/senha), isolados por restaurante.
+   ============================================================ */
+
+:root{
+  --paper:#F2EEE5;      /* fundo — papel do logo */
+  --card:#FBFAF6;       /* superfície */
+  --stock:#FFFFFF;      /* etiqueta (BOPP branco) */
+  --ink:#17150F;        /* tinta */
+  --ink-2:#4A4437;
+  --ink-3:#8A8172;
+  --rule:#DCD5C6;
+  --rule-2:#C9C0AC;
+  --alerta:#A32E22;     /* ÚNICA cor do app: validade / risco */
+  --ok:#3F6B4A;
+  --r:14px;
+  --acento:#17150F;        /* cor de destaque — sobrescrita por página */
+  --acento-hover:#000000;  /* estado :hover do botão primário */
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;min-height:100%;}
+body{font-family:'Archivo',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;font-size:15px;}
+.app{max-width:1080px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ---------- topo ---------- */
+header.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:16px 22px;border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:20;
+  background:rgba(242,238,229,.94);backdrop-filter:blur(8px);}
+.brand{display:flex;align-items:center;gap:11px;min-width:0;}
+.brand .mark{width:26px;height:34px;flex:none;}
+.brand .mark svg{width:100%;height:100%;display:block;}
+.brand h1{font-family:'Bodoni Moda',serif;font-size:19px;font-weight:700;letter-spacing:.06em;margin:0;line-height:1;}
+.brand small{display:block;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:600;margin-top:4px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+nav.tabs{display:flex;gap:2px;}
+nav.tabs button{font-family:inherit;font-weight:700;font-size:13.5px;border:none;background:transparent;color:var(--ink-3);
+  padding:9px 13px;border-radius:9px;cursor:pointer;transition:.14s;}
+nav.tabs button.active{background:var(--acento);color:var(--paper);}
+nav.tabs button:hover:not(.active){color:var(--ink);background:rgba(23,21,15,.06);}
+nav.tabs button:focus-visible,.btn:focus-visible,.icon-btn:focus-visible,input:focus-visible,select:focus-visible,
+textarea:focus-visible,.card:focus-visible,.chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+
+main{flex:1;padding:24px 22px 60px;}
+.view{display:none;}
+.view.active{display:block;animation:fade .18s ease;}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- títulos ---------- */
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+.section-head h2{font-family:'Bodoni Moda',serif;font-size:26px;margin:0;font-weight:700;letter-spacing:.01em;}
+.section-head p{margin:5px 0 0;color:var(--ink-3);font-size:13px;max-width:52ch;}
+.eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);font-weight:700;margin-bottom:10px;}
+
+/* ---------- controles ---------- */
+.btn{font-family:inherit;font-weight:700;font-size:14.5px;border:1px solid transparent;cursor:pointer;
+  padding:12px 18px;border-radius:10px;transition:.14s;display:inline-flex;align-items:center;gap:8px;justify-content:center;}
+.btn-primary{background:var(--acento);color:var(--paper);}
+.btn-primary:hover{background:var(--acento-hover);}
+.btn-primary:disabled{opacity:.55;cursor:default;}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--rule-2);}
+.btn-ghost:hover{border-color:var(--ink);}
+.btn-danger{background:transparent;color:var(--alerta);border-color:rgba(163,46,34,.35);}
+.btn-danger:hover{border-color:var(--alerta);}
+.btn-block{width:100%;}
+.btn-sm{padding:8px 13px;font-size:13px;}
+.icon-btn{background:transparent;border:1px solid var(--rule-2);color:var(--ink-2);width:36px;height:36px;
+  border-radius:9px;cursor:pointer;display:grid;place-items:center;font-size:14px;}
+.icon-btn:hover{border-color:var(--ink);color:var(--ink);}
+
+.searchbar{display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap;}
+.searchbar input{flex:1;min-width:190px;font-family:inherit;font-size:16px;background:var(--card);
+  border:1px solid var(--rule-2);color:var(--ink);padding:13px 15px;border-radius:10px;outline:none;}
+.searchbar input:focus{border-color:var(--ink);}
+.searchbar input::placeholder{color:var(--ink-3);}
+
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;}
+.chip{font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:99px;cursor:pointer;
+  border:1px solid var(--rule-2);background:transparent;color:var(--ink-2);transition:.14s;}
+.chip.on{background:var(--acento);color:var(--paper);border-color:var(--acento);}
+.chip:hover:not(.on){border-color:var(--ink);}
+
+/* ---------- grade de produtos ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:16px 15px;
+  cursor:pointer;transition:.14s;text-align:left;position:relative;min-height:124px;font-family:inherit;
+  display:flex;flex-direction:column;justify-content:space-between;color:var(--ink);}
+.card:hover{border-color:var(--ink);}
+.card:active{transform:scale(.985);}
+.card .grp{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);}
+.card .nome{font-size:17px;font-weight:800;line-height:1.15;margin:7px 0 0;}
+.card .mets{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px;}
+.card .met{font-size:10.5px;font-weight:700;border:1px solid var(--rule-2);border-radius:6px;padding:3px 7px;color:var(--ink-2);}
+
+.empty{text-align:center;padding:56px 22px;color:var(--ink-3);border:1px dashed var(--rule-2);border-radius:var(--r);}
+.empty h3{color:var(--ink);font-family:'Bodoni Moda',serif;font-size:20px;margin:0 0 6px;font-weight:700;}
+.empty p{margin:0 0 16px;font-size:13.5px;}
+
+/* ---------- listas ---------- */
+.row{background:var(--card);border:1px solid var(--rule);border-radius:11px;padding:13px 15px;
+  display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.row .info{flex:1;min-width:0;}
+.row .info .nome{font-weight:800;font-size:15.5px;}
+.row .info .sub{color:var(--ink-3);font-size:12.5px;margin-top:3px;line-height:1.4;}
+.row .acts{display:flex;gap:6px;flex:none;}
+
+/* ---------- formulários ---------- */
+.field{margin-bottom:15px;}
+.field label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:7px;}
+.field input,.field select,.field textarea{width:100%;font-family:inherit;font-size:16px;background:var(--stock);
+  border:1px solid var(--rule-2);color:var(--ink);padding:12px 13px;border-radius:9px;outline:none;}
+.field textarea{min-height:150px;resize:vertical;line-height:1.5;font-size:14.5px;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ink);}
+.field .cols{display:flex;gap:10px;}
+.field .cols>*{flex:1;min-width:0;}
+.opt{font-size:9.5px;color:var(--ink-3);letter-spacing:.1em;}
+.help{font-size:12px;color:var(--ink-3);margin:-8px 0 15px;line-height:1.45;}
+
+
+/* ---------- modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(23,21,15,.42);backdrop-filter:blur(2px);display:none;
+  align-items:flex-start;justify-content:center;z-index:50;padding:20px;overflow-y:auto;}
+.overlay.open{display:flex;}
+.modal{background:var(--paper);border:1px solid var(--rule-2);border-radius:16px;width:100%;max-width:540px;
+  padding:24px;margin:auto;box-shadow:0 20px 60px rgba(23,21,15,.22);}
+.modal h3{font-family:'Bodoni Moda',serif;margin:0 0 4px;font-size:22px;font-weight:700;}
+.modal .hint{color:var(--ink-3);font-size:12.5px;margin:0 0 18px;line-height:1.45;}
+.modal-actions{display:flex;gap:9px;margin-top:18px;}
+.modal-actions .btn{flex:1;}
+
+
+/* ---------- avisos ---------- */
+.note{background:var(--card);border:1px solid var(--rule);border-left:2px solid var(--ink-3);
+  border-radius:9px;padding:14px 16px;font-size:12.5px;line-height:1.6;color:var(--ink-2);margin-top:26px;}
+.note b{color:var(--ink);}
+.note.warn{border-left-color:var(--alerta);}
+
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:22px;max-width:560px;}
+.hist{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;}
+.hist-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;
+  border-bottom:1px solid var(--rule);font-size:13.5px;}
+.hist-row:last-child{border-bottom:none;}
+.hist-row .h-prod{font-weight:800;}
+.hist-row .h-meta{color:var(--ink-3);font-size:11.5px;margin-top:2px;}
+.hist-row .h-when{color:var(--ink-3);font-size:11.5px;text-align:right;flex:none;font-weight:700;}
+
+.seg{display:inline-flex;border:1px solid var(--rule-2);border-radius:10px;padding:3px;margin-bottom:20px;background:var(--card);}
+.seg button{font-family:inherit;font-weight:700;font-size:13.5px;border:none;background:transparent;color:var(--ink-3);
+  padding:8px 16px;border-radius:7px;cursor:pointer;}
+.seg button.on{background:var(--acento);color:var(--paper);}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);color:var(--paper);
+  font-weight:700;padding:13px 22px;border-radius:10px;box-shadow:0 10px 30px rgba(23,21,15,.3);z-index:90;
+  transition:.24s;opacity:0;font-size:14.5px;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* ---------- login ---------- */
+#app-root{display:none;}
+.login-wrap{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px;}
+.login-wrap.open{display:flex;}
+.login-card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:32px;max-width:380px;
+  width:100%;box-shadow:0 20px 60px rgba(23,21,15,.10);}
+.login-card .mark{width:26px;height:34px;margin:0 auto 16px;}
+.login-card .mark svg{width:100%;height:100%;display:block;}
+.login-card h1{font-family:'Bodoni Moda',serif;text-align:center;font-size:21px;margin:0 0 4px;font-weight:700;}
+.login-card p.hint{text-align:center;margin:0 0 22px;}
+.link-btn{background:none;border:none;color:var(--ink-2);font-weight:700;font-size:12.5px;cursor:pointer;padding:0;
+  text-decoration:underline;}
+.login-msg{font-size:12.5px;margin-top:12px;text-align:center;color:var(--ink-3);min-height:16px;}
+.login-msg.err{color:var(--alerta);}
+.login-msg.ok{color:var(--ok);}
+
+@media(max-width:680px){
+  header.topbar{padding:13px 16px;}
+  main{padding:18px 16px 50px;}
+  nav.tabs button{padding:9px 10px;font-size:12.5px;}
+  .brand small{display:none;}
+  .section-head h2{font-size:22px;}
+  .field .cols{flex-direction:column;gap:15px;}
+}
+

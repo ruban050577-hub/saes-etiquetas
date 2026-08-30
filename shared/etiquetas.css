@@ -1,0 +1,73 @@
+/* ============================================================
+   ETIQUETAS — estilos exclusivos deste app
+   Carregar SEMPRE depois de shared/ui.css.
+   Contém: seleção de métodos, pré-visualização da etiqueta e
+   o bloco de impressão da BOPP 60×60mm.
+   ============================================================ */
+
+/* seleção de métodos no cadastro */
+.met-pick{border:1px solid var(--rule-2);border-radius:11px;overflow:hidden;margin-bottom:6px;}
+.met-pick .mp-row{display:flex;align-items:center;gap:11px;padding:11px 13px;border-bottom:1px solid var(--rule);}
+.met-pick .mp-row:last-child{border-bottom:none;}
+.met-pick .mp-row.on{background:rgba(23,21,15,.045);}
+.mp-row input[type=checkbox]{width:19px;height:19px;flex:none;accent-color:var(--ink);margin:0;}
+.mp-row .mp-nome{flex:1;font-weight:700;font-size:14px;min-width:0;}
+.mp-row .mp-nome small{display:block;font-weight:600;color:var(--ink-3);font-size:11px;margin-top:2px;}
+.mp-row .mp-prazo{display:flex;gap:5px;align-items:center;flex:none;}
+.mp-row .mp-prazo input{width:62px;font-size:14px;padding:7px 8px;text-align:right;}
+.mp-row .mp-prazo select{width:74px;font-size:13px;padding:7px 6px;}
+.mp-row.off .mp-prazo{opacity:.35;pointer-events:none;}
+
+
+/* ---------- ETIQUETA (assinatura do app) ---------- */
+.label-preview{background:var(--stock);color:#000;padding:11px 12px;margin:0 0 18px;
+  border:1.5px solid #000;box-shadow:3px 3px 0 rgba(23,21,15,.13);}
+.lp-prod{font-size:19px;font-weight:900;line-height:1.02;text-transform:uppercase;
+  border-bottom:1.5px solid #000;padding-bottom:5px;letter-spacing:-.01em;}
+.lp-line{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;margin-top:5px;font-weight:800;}
+.lp-line .l{color:#555;font-weight:700;text-transform:uppercase;font-size:9.5px;letter-spacing:.12em;
+  align-self:center;white-space:nowrap;}
+.lp-val{color:var(--alerta);font-weight:900;font-size:14px;}
+.lp-modos{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;border-top:1px solid #000;padding-top:6px;}
+.lp-modo{font-size:9.5px;font-weight:700;border:1px solid #c4c4c4;border-radius:2px;padding:2px 5px;
+  text-transform:uppercase;color:#bbb;letter-spacing:.04em;}
+.lp-modo.on{background:#000;color:#fff;border-color:#000;font-weight:900;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.lp-extra{display:flex;flex-wrap:wrap;gap:9px;margin-top:7px;font-size:9.5px;font-weight:700;
+  border-top:1px solid #000;padding-top:5px;color:#222;}
+.lp-foot{font-size:7.5px;color:#666;margin-top:6px;letter-spacing:.04em;}
+
+
+@media(max-width:680px){
+  .mp-row .mp-prazo input{width:56px;}
+}
+
+/* ============================================================
+   IMPRESSÃO — BOPP térmica 60×60mm
+   ============================================================ */
+#print-area{display:none;}
+@media print{
+  @page{ size:60mm 60mm; margin:0; }
+  body{background:#fff;}
+  body *{visibility:hidden;}
+  #print-area,#print-area *{visibility:visible;}
+  #print-area{display:block;position:fixed;left:0;top:0;width:60mm;height:60mm;padding:2mm 2.2mm;
+    color:#000;background:#fff;font-family:'Archivo',sans-serif;box-sizing:border-box;overflow:hidden;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .pa-prod{font-size:11pt;font-weight:900;line-height:1.02;text-transform:uppercase;letter-spacing:-.01em;
+    border-bottom:.35mm solid #000;padding-bottom:.8mm;max-height:9mm;overflow:hidden;}
+  .pa-line{display:flex;justify-content:space-between;gap:1.5mm;font-size:7pt;font-weight:800;margin-top:.9mm;}
+  .pa-line .l{font-size:5.6pt;font-weight:700;text-transform:uppercase;white-space:nowrap;align-self:center;letter-spacing:.05em;}
+  .pa-val{font-weight:900;font-size:8pt;text-align:right;}
+  .pa-modos{display:flex;flex-wrap:wrap;gap:.7mm;margin-top:1mm;border-top:.3mm solid #000;padding-top:.9mm;}
+  .pa-modo{font-size:5.3pt;font-weight:700;border:.22mm solid #999;border-radius:.4mm;padding:.25mm .8mm;
+    text-transform:uppercase;color:#999;}
+  .pa-modo.on{background:#000;color:#fff;border:.4mm solid #000;font-weight:900;font-size:6pt;padding:.4mm 1.1mm;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .pa-extra{display:flex;flex-wrap:wrap;gap:1.5mm;margin-top:.9mm;font-size:5.4pt;font-weight:700;
+    border-top:.3mm solid #000;padding-top:.8mm;}
+  .pa-foot{font-size:4.2pt;color:#000;margin-top:.8mm;border-top:.25mm solid #000;padding-top:.5mm;
+    font-weight:600;line-height:1.25;}
+  .pa-avulso{font-size:20pt;font-weight:900;text-transform:uppercase;line-height:1.02;
+    display:flex;align-items:center;min-height:34mm;letter-spacing:-.02em;}
+}

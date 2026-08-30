@@ -7,252 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600;6..96,700&display=swap" rel="stylesheet">
-<style>
-/* ============================================================
-   SAES FOOD LAB — Etiquetas de Validade  (v3)
-   Modelo: produto -> N métodos de conservação (prazo por método)
-   Métodos são cadastro editável. Base: Portaria CVS-3/2026 (SP).
-   Dados em Supabase (login por email/senha), isolados por restaurante.
-   ============================================================ */
-
-:root{
-  --paper:#F2EEE5;      /* fundo — papel do logo */
-  --card:#FBFAF6;       /* superfície */
-  --stock:#FFFFFF;      /* etiqueta (BOPP branco) */
-  --ink:#17150F;        /* tinta */
-  --ink-2:#4A4437;
-  --ink-3:#8A8172;
-  --rule:#DCD5C6;
-  --rule-2:#C9C0AC;
-  --alerta:#A32E22;     /* ÚNICA cor do app: validade / risco */
-  --ok:#3F6B4A;
-  --r:14px;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;min-height:100%;}
-body{font-family:'Archivo',system-ui,sans-serif;background:var(--paper);color:var(--ink);
-  -webkit-font-smoothing:antialiased;overflow-x:hidden;font-size:15px;}
-.app{max-width:1080px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
-
-/* ---------- topo ---------- */
-header.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;
-  padding:16px 22px;border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:20;
-  background:rgba(242,238,229,.94);backdrop-filter:blur(8px);}
-.brand{display:flex;align-items:center;gap:11px;min-width:0;}
-.brand .mark{width:26px;height:34px;flex:none;}
-.brand .mark svg{width:100%;height:100%;display:block;}
-.brand h1{font-family:'Bodoni Moda',serif;font-size:19px;font-weight:700;letter-spacing:.06em;margin:0;line-height:1;}
-.brand small{display:block;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3);
-  font-weight:600;margin-top:4px;}
-.topbar-right{display:flex;align-items:center;gap:12px;}
-nav.tabs{display:flex;gap:2px;}
-nav.tabs button{font-family:inherit;font-weight:700;font-size:13.5px;border:none;background:transparent;color:var(--ink-3);
-  padding:9px 13px;border-radius:9px;cursor:pointer;transition:.14s;}
-nav.tabs button.active{background:var(--ink);color:var(--paper);}
-nav.tabs button:hover:not(.active){color:var(--ink);background:rgba(23,21,15,.06);}
-nav.tabs button:focus-visible,.btn:focus-visible,.icon-btn:focus-visible,input:focus-visible,select:focus-visible,
-textarea:focus-visible,.card:focus-visible,.chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
-
-main{flex:1;padding:24px 22px 60px;}
-.view{display:none;}
-.view.active{display:block;animation:fade .18s ease;}
-@keyframes fade{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-
-/* ---------- títulos ---------- */
-.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
-.section-head h2{font-family:'Bodoni Moda',serif;font-size:26px;margin:0;font-weight:700;letter-spacing:.01em;}
-.section-head p{margin:5px 0 0;color:var(--ink-3);font-size:13px;max-width:52ch;}
-.eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);font-weight:700;margin-bottom:10px;}
-
-/* ---------- controles ---------- */
-.btn{font-family:inherit;font-weight:700;font-size:14.5px;border:1px solid transparent;cursor:pointer;
-  padding:12px 18px;border-radius:10px;transition:.14s;display:inline-flex;align-items:center;gap:8px;justify-content:center;}
-.btn-primary{background:var(--ink);color:var(--paper);}
-.btn-primary:hover{background:#000;}
-.btn-primary:disabled{opacity:.55;cursor:default;}
-.btn-ghost{background:transparent;color:var(--ink);border-color:var(--rule-2);}
-.btn-ghost:hover{border-color:var(--ink);}
-.btn-danger{background:transparent;color:var(--alerta);border-color:rgba(163,46,34,.35);}
-.btn-danger:hover{border-color:var(--alerta);}
-.btn-block{width:100%;}
-.btn-sm{padding:8px 13px;font-size:13px;}
-.icon-btn{background:transparent;border:1px solid var(--rule-2);color:var(--ink-2);width:36px;height:36px;
-  border-radius:9px;cursor:pointer;display:grid;place-items:center;font-size:14px;}
-.icon-btn:hover{border-color:var(--ink);color:var(--ink);}
-
-.searchbar{display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap;}
-.searchbar input{flex:1;min-width:190px;font-family:inherit;font-size:16px;background:var(--card);
-  border:1px solid var(--rule-2);color:var(--ink);padding:13px 15px;border-radius:10px;outline:none;}
-.searchbar input:focus{border-color:var(--ink);}
-.searchbar input::placeholder{color:var(--ink-3);}
-
-.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;}
-.chip{font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:99px;cursor:pointer;
-  border:1px solid var(--rule-2);background:transparent;color:var(--ink-2);transition:.14s;}
-.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
-.chip:hover:not(.on){border-color:var(--ink);}
-
-/* ---------- grade de produtos ---------- */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;}
-.card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:16px 15px;
-  cursor:pointer;transition:.14s;text-align:left;position:relative;min-height:124px;font-family:inherit;
-  display:flex;flex-direction:column;justify-content:space-between;color:var(--ink);}
-.card:hover{border-color:var(--ink);}
-.card:active{transform:scale(.985);}
-.card .grp{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);}
-.card .nome{font-size:17px;font-weight:800;line-height:1.15;margin:7px 0 0;}
-.card .mets{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px;}
-.card .met{font-size:10.5px;font-weight:700;border:1px solid var(--rule-2);border-radius:6px;padding:3px 7px;color:var(--ink-2);}
-
-.empty{text-align:center;padding:56px 22px;color:var(--ink-3);border:1px dashed var(--rule-2);border-radius:var(--r);}
-.empty h3{color:var(--ink);font-family:'Bodoni Moda',serif;font-size:20px;margin:0 0 6px;font-weight:700;}
-.empty p{margin:0 0 16px;font-size:13.5px;}
-
-/* ---------- listas ---------- */
-.row{background:var(--card);border:1px solid var(--rule);border-radius:11px;padding:13px 15px;
-  display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-.row .info{flex:1;min-width:0;}
-.row .info .nome{font-weight:800;font-size:15.5px;}
-.row .info .sub{color:var(--ink-3);font-size:12.5px;margin-top:3px;line-height:1.4;}
-.row .acts{display:flex;gap:6px;flex:none;}
-
-/* ---------- formulários ---------- */
-.field{margin-bottom:15px;}
-.field label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--ink-3);margin-bottom:7px;}
-.field input,.field select,.field textarea{width:100%;font-family:inherit;font-size:16px;background:var(--stock);
-  border:1px solid var(--rule-2);color:var(--ink);padding:12px 13px;border-radius:9px;outline:none;}
-.field textarea{min-height:150px;resize:vertical;line-height:1.5;font-size:14.5px;}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ink);}
-.field .cols{display:flex;gap:10px;}
-.field .cols>*{flex:1;min-width:0;}
-.opt{font-size:9.5px;color:var(--ink-3);letter-spacing:.1em;}
-.help{font-size:12px;color:var(--ink-3);margin:-8px 0 15px;line-height:1.45;}
-
-/* seleção de métodos no cadastro */
-.met-pick{border:1px solid var(--rule-2);border-radius:11px;overflow:hidden;margin-bottom:6px;}
-.met-pick .mp-row{display:flex;align-items:center;gap:11px;padding:11px 13px;border-bottom:1px solid var(--rule);}
-.met-pick .mp-row:last-child{border-bottom:none;}
-.met-pick .mp-row.on{background:rgba(23,21,15,.045);}
-.mp-row input[type=checkbox]{width:19px;height:19px;flex:none;accent-color:var(--ink);margin:0;}
-.mp-row .mp-nome{flex:1;font-weight:700;font-size:14px;min-width:0;}
-.mp-row .mp-nome small{display:block;font-weight:600;color:var(--ink-3);font-size:11px;margin-top:2px;}
-.mp-row .mp-prazo{display:flex;gap:5px;align-items:center;flex:none;}
-.mp-row .mp-prazo input{width:62px;font-size:14px;padding:7px 8px;text-align:right;}
-.mp-row .mp-prazo select{width:74px;font-size:13px;padding:7px 6px;}
-.mp-row.off .mp-prazo{opacity:.35;pointer-events:none;}
-
-/* ---------- modal ---------- */
-.overlay{position:fixed;inset:0;background:rgba(23,21,15,.42);backdrop-filter:blur(2px);display:none;
-  align-items:flex-start;justify-content:center;z-index:50;padding:20px;overflow-y:auto;}
-.overlay.open{display:flex;}
-.modal{background:var(--paper);border:1px solid var(--rule-2);border-radius:16px;width:100%;max-width:540px;
-  padding:24px;margin:auto;box-shadow:0 20px 60px rgba(23,21,15,.22);}
-.modal h3{font-family:'Bodoni Moda',serif;margin:0 0 4px;font-size:22px;font-weight:700;}
-.modal .hint{color:var(--ink-3);font-size:12.5px;margin:0 0 18px;line-height:1.45;}
-.modal-actions{display:flex;gap:9px;margin-top:18px;}
-.modal-actions .btn{flex:1;}
-
-/* ---------- ETIQUETA (assinatura do app) ---------- */
-.label-preview{background:var(--stock);color:#000;padding:11px 12px;margin:0 0 18px;
-  border:1.5px solid #000;box-shadow:3px 3px 0 rgba(23,21,15,.13);}
-.lp-prod{font-size:19px;font-weight:900;line-height:1.02;text-transform:uppercase;
-  border-bottom:1.5px solid #000;padding-bottom:5px;letter-spacing:-.01em;}
-.lp-line{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;margin-top:5px;font-weight:800;}
-.lp-line .l{color:#555;font-weight:700;text-transform:uppercase;font-size:9.5px;letter-spacing:.12em;
-  align-self:center;white-space:nowrap;}
-.lp-val{color:var(--alerta);font-weight:900;font-size:14px;}
-.lp-modos{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;border-top:1px solid #000;padding-top:6px;}
-.lp-modo{font-size:9.5px;font-weight:700;border:1px solid #c4c4c4;border-radius:2px;padding:2px 5px;
-  text-transform:uppercase;color:#bbb;letter-spacing:.04em;}
-.lp-modo.on{background:#000;color:#fff;border-color:#000;font-weight:900;
-  -webkit-print-color-adjust:exact;print-color-adjust:exact;}
-.lp-extra{display:flex;flex-wrap:wrap;gap:9px;margin-top:7px;font-size:9.5px;font-weight:700;
-  border-top:1px solid #000;padding-top:5px;color:#222;}
-.lp-foot{font-size:7.5px;color:#666;margin-top:6px;letter-spacing:.04em;}
-
-/* ---------- avisos ---------- */
-.note{background:var(--card);border:1px solid var(--rule);border-left:2px solid var(--ink-3);
-  border-radius:9px;padding:14px 16px;font-size:12.5px;line-height:1.6;color:var(--ink-2);margin-top:26px;}
-.note b{color:var(--ink);}
-.note.warn{border-left-color:var(--alerta);}
-
-.panel{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:22px;max-width:560px;}
-.hist{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;}
-.hist-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;
-  border-bottom:1px solid var(--rule);font-size:13.5px;}
-.hist-row:last-child{border-bottom:none;}
-.hist-row .h-prod{font-weight:800;}
-.hist-row .h-meta{color:var(--ink-3);font-size:11.5px;margin-top:2px;}
-.hist-row .h-when{color:var(--ink-3);font-size:11.5px;text-align:right;flex:none;font-weight:700;}
-
-.seg{display:inline-flex;border:1px solid var(--rule-2);border-radius:10px;padding:3px;margin-bottom:20px;background:var(--card);}
-.seg button{font-family:inherit;font-weight:700;font-size:13.5px;border:none;background:transparent;color:var(--ink-3);
-  padding:8px 16px;border-radius:7px;cursor:pointer;}
-.seg button.on{background:var(--ink);color:var(--paper);}
-
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);color:var(--paper);
-  font-weight:700;padding:13px 22px;border-radius:10px;box-shadow:0 10px 30px rgba(23,21,15,.3);z-index:90;
-  transition:.24s;opacity:0;font-size:14.5px;}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-
-/* ---------- login ---------- */
-#app-root{display:none;}
-.login-wrap{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px;}
-.login-wrap.open{display:flex;}
-.login-card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:32px;max-width:380px;
-  width:100%;box-shadow:0 20px 60px rgba(23,21,15,.10);}
-.login-card .mark{width:26px;height:34px;margin:0 auto 16px;}
-.login-card .mark svg{width:100%;height:100%;display:block;}
-.login-card h1{font-family:'Bodoni Moda',serif;text-align:center;font-size:21px;margin:0 0 4px;font-weight:700;}
-.login-card p.hint{text-align:center;margin:0 0 22px;}
-.link-btn{background:none;border:none;color:var(--ink-2);font-weight:700;font-size:12.5px;cursor:pointer;padding:0;
-  text-decoration:underline;}
-.login-msg{font-size:12.5px;margin-top:12px;text-align:center;color:var(--ink-3);min-height:16px;}
-.login-msg.err{color:var(--alerta);}
-.login-msg.ok{color:var(--ok);}
-
-@media(max-width:680px){
-  header.topbar{padding:13px 16px;}
-  main{padding:18px 16px 50px;}
-  nav.tabs button{padding:9px 10px;font-size:12.5px;}
-  .brand small{display:none;}
-  .section-head h2{font-size:22px;}
-  .field .cols{flex-direction:column;gap:15px;}
-  .mp-row .mp-prazo input{width:56px;}
-}
-
-/* ============================================================
-   IMPRESSÃO — BOPP térmica 60×60mm
-   ============================================================ */
-#print-area{display:none;}
-@media print{
-  @page{ size:60mm 60mm; margin:0; }
-  body{background:#fff;}
-  body *{visibility:hidden;}
-  #print-area,#print-area *{visibility:visible;}
-  #print-area{display:block;position:fixed;left:0;top:0;width:60mm;height:60mm;padding:2mm 2.2mm;
-    color:#000;background:#fff;font-family:'Archivo',sans-serif;box-sizing:border-box;overflow:hidden;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .pa-prod{font-size:11pt;font-weight:900;line-height:1.02;text-transform:uppercase;letter-spacing:-.01em;
-    border-bottom:.35mm solid #000;padding-bottom:.8mm;max-height:9mm;overflow:hidden;}
-  .pa-line{display:flex;justify-content:space-between;gap:1.5mm;font-size:7pt;font-weight:800;margin-top:.9mm;}
-  .pa-line .l{font-size:5.6pt;font-weight:700;text-transform:uppercase;white-space:nowrap;align-self:center;letter-spacing:.05em;}
-  .pa-val{font-weight:900;font-size:8pt;text-align:right;}
-  .pa-modos{display:flex;flex-wrap:wrap;gap:.7mm;margin-top:1mm;border-top:.3mm solid #000;padding-top:.9mm;}
-  .pa-modo{font-size:5.3pt;font-weight:700;border:.22mm solid #999;border-radius:.4mm;padding:.25mm .8mm;
-    text-transform:uppercase;color:#999;}
-  .pa-modo.on{background:#000;color:#fff;border:.4mm solid #000;font-weight:900;font-size:6pt;padding:.4mm 1.1mm;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .pa-extra{display:flex;flex-wrap:wrap;gap:1.5mm;margin-top:.9mm;font-size:5.4pt;font-weight:700;
-    border-top:.3mm solid #000;padding-top:.8mm;}
-  .pa-foot{font-size:4.2pt;color:#000;margin-top:.8mm;border-top:.25mm solid #000;padding-top:.5mm;
-    font-weight:600;line-height:1.25;}
-  .pa-avulso{font-size:20pt;font-weight:900;text-transform:uppercase;line-height:1.02;
-    display:flex;align-items:center;min-height:34mm;letter-spacing:-.02em;}
-}
-</style>
+<link rel="stylesheet" href="shared/ui.css">
+<link rel="stylesheet" href="shared/etiquetas.css">
 </head>
 <body>
 
@@ -538,18 +294,9 @@ main{flex:1;padding:24px 22px 60px;}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="shared/supabase.js"></script>
+<script src="shared/org.js"></script>
 <script>
-/* ============================================================
-   CONFIGURAÇÃO DO SUPABASE
-   Painel do Supabase → seu projeto → Configurações → API:
-   - Project URL
-   - anon / publishable key
-   Nenhum dos dois é secreto: são feitos para ficar no código do app.
-   Quem protege os dados de cada restaurante é a regra RLS no banco.
-   ============================================================ */
-const SUPABASE_URL = "https://aqcczkevyycvsvjvhrdx.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_b92iL0z7pryXIuZ1NeLz4A_6MKgXIc_";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ============================================================
    MODELO
@@ -584,8 +331,6 @@ const METODOS_PADRAO = [
 
 /* ===================== DADOS EM MEMÓRIA (carregados do Supabase após login) ===================== */
 let DB = { estabelecimento:{nome:"",cnpj:""}, config:{responsavel_padrao:""}, metodos:[], produtos:[], historico:[] };
-let ORG_ID = null;
-let USER_ID = null;
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c =>
@@ -1002,11 +747,11 @@ function disparar(qtd){
   const fire = () => { if(i < qtd){ i++; window.print(); setTimeout(fire, 400); } };
   fire();
 }
-function imprimirProduto(){
+async function imprimirProduto(){
   const qtd = Math.min(50, Math.max(1, parseInt(document.getElementById('imp-qtd').value || 1, 10)));
   const d = dadosImpressao();
   document.getElementById('print-area').innerHTML = etiquetaHTML('pa', d);
-  registrarHistorico({tipo:'produto', produto: prodAtual.nome, metodo: d._metodo,
+  await registrarHistorico({tipo:'produto', produto: prodAtual.nome, metodo: d._metodo,
     resp: d.resp, sif: d._sif, lote: d._lote, qtd, preparo: d._prep, validade: d._val});
   fechar('m-imprimir'); disparar(qtd);
   toast(qtd > 1 ? qtd + " etiquetas enviadas" : "Etiqueta enviada");
@@ -1034,7 +779,7 @@ function renderAvulso(){
 ['av-txt','av-resp'].forEach(id =>
   document.getElementById(id).addEventListener('input', renderAvulso));
 
-function imprimirAvulso(){
+async function imprimirAvulso(){
   const txt = document.getElementById('av-txt').value.trim();
   if(!txt){ toast("Escreva o texto do rótulo"); return; }
   const qtd = Math.min(50, Math.max(1, parseInt(document.getElementById('av-qtd').value || 1, 10)));
@@ -1043,7 +788,7 @@ function imprimirAvulso(){
     '<div class="pa-avulso">' + esc(d.produto) + '</div>' +
     '<div class="pa-extra"><span>' + d.impresso + '</span><span>Resp.: ' + esc(d.resp) + '</span></div>' +
     '<div class="pa-foot">' + esc(d.rodape) + '</div>';
-  registrarHistorico({tipo:'avulso', produto:txt, metodo:'Rótulo avulso',
+  await registrarHistorico({tipo:'avulso', produto:txt, metodo:'Rótulo avulso',
     resp: d.resp, sif:"", lote:"", qtd, preparo: new Date(), validade: null});
   fechar('m-avulso'); disparar(qtd);
   toast(qtd > 1 ? qtd + " rótulos enviados" : "Rótulo enviado");
@@ -1181,11 +926,6 @@ async function zerar(){
   toast("Tudo zerado");
 }
 
-/* ============================================================
-   AUTENTICAÇÃO (Supabase Auth — login por email/senha)
-   Sem tela de "criar conta": as contas são criadas manualmente
-   pelo dono do negócio, direto no painel do Supabase.
-   ============================================================ */
 async function semearMetodosPadrao(){
   const linhas = METODOS_PADRAO.map(m => ({org_id:ORG_ID, nome:m.nome, familia:m.familia, horas:m.horas}));
   const {data,error} = await sb.from('metodos').insert(linhas).select();
@@ -1207,75 +947,19 @@ async function carregarTudo(){
   if(DB.metodos.length === 0) await semearMetodosPadrao();
 }
 
-function mostrarTelaLogin(){ document.getElementById('tela-login').classList.add('open'); document.getElementById('app-root').style.display='none'; }
-function mostrarApp(){ document.getElementById('tela-login').classList.remove('open'); document.getElementById('app-root').style.display='flex'; }
-function mostrarLoginForm(){ document.getElementById('login-form').style.display=''; document.getElementById('esqueci-form').style.display='none'; document.getElementById('nova-senha-form').style.display='none'; }
-function mostrarEsqueciSenha(){ document.getElementById('login-form').style.display='none'; document.getElementById('esqueci-form').style.display=''; document.getElementById('nova-senha-form').style.display='none'; }
-function mostrarNovaSenha(){ document.getElementById('login-form').style.display='none'; document.getElementById('esqueci-form').style.display='none'; document.getElementById('nova-senha-form').style.display=''; }
-function loginMsg(id,texto,tipo){ const el=document.getElementById(id); el.textContent=texto; el.className='login-msg'+(tipo?' '+tipo:''); }
-
-async function fazerLogin(){
-  const email = document.getElementById('login-email').value.trim();
-  const senha = document.getElementById('login-senha').value;
-  if(!email||!senha){ loginMsg('login-msg','Preencha email e senha.','err'); return; }
-  loginMsg('login-msg','Entrando...','');
-  const {data,error} = await sb.auth.signInWithPassword({email,password:senha});
-  if(error){ loginMsg('login-msg','Não foi possível entrar. Confira email e senha.','err'); return; }
-  await entrarNoApp(data.session);
-}
-async function enviarResetSenha(){
-  const email = document.getElementById('reset-email').value.trim();
-  if(!email){ loginMsg('reset-msg','Informe seu email.','err'); return; }
-  loginMsg('reset-msg','Enviando...','');
-  const {error} = await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split('#')[0].split('?')[0]});
-  if(error){ loginMsg('reset-msg','Não foi possível enviar. Confira o email.','err'); return; }
-  loginMsg('reset-msg','Se esse email existir na nossa base, enviamos um link. Confira sua caixa de entrada.','ok');
-}
-async function salvarNovaSenha(){
-  const senha = document.getElementById('nova-senha').value;
-  if(!senha||senha.length<6){ loginMsg('nova-senha-msg','A senha precisa ter pelo menos 6 caracteres.','err'); return; }
-  loginMsg('nova-senha-msg','Salvando...','');
-  const {error} = await sb.auth.updateUser({password:senha});
-  if(error){ loginMsg('nova-senha-msg','Não foi possível salvar. Peça um novo link em "Esqueci minha senha".','err'); return; }
-  try{ history.replaceState(null,'',window.location.pathname); }catch(e){}
-  toast('Senha atualizada.');
-  const {data:{session}} = await sb.auth.getSession();
-  await entrarNoApp(session);
-}
-async function fazerLogout(){
-  if(!confirm('Sair da conta?')) return;
-  await sb.auth.signOut();
-  ORG_ID=null; USER_ID=null;
-  DB = { estabelecimento:{nome:"",cnpj:""}, config:{responsavel_padrao:""}, metodos:[], produtos:[], historico:[] };
-  document.getElementById('login-email').value=''; document.getElementById('login-senha').value='';
-  mostrarLoginForm(); mostrarTelaLogin();
-}
-async function entrarNoApp(session){
-  if(!session){ mostrarLoginForm(); mostrarTelaLogin(); return; }
-  USER_ID = session.user.id;
-  const {data:perfil,error} = await sb.from('perfis').select('org_id,nome').eq('id',USER_ID).single();
-  if(error || !perfil){
-    loginMsg('login-msg','Sua conta ainda não está vinculada a nenhum restaurante. Fale com o suporte.','err');
-    await sb.auth.signOut(); mostrarLoginForm(); mostrarTelaLogin(); return;
-  }
-  ORG_ID = perfil.org_id;
+/* ============================================================
+   LIGAÇÃO COM A AUTENTICAÇÃO COMPARTILHADA (shared/supabase.js)
+   O login, a recuperação de senha e o contexto de organização
+   moram em shared/. Aqui ficam só os dois ganchos do etiquetas:
+   o que carregar ao entrar, e o que limpar ao sair.
+   ============================================================ */
+window.aoEntrarNoApp = async function(){
   await carregarTudo();
-  mostrarApp();
   carregarConfig(); renderGrid(); renderProdutos(); renderMetodos(); renderHistorico();
-}
-function isRecoveryUrl(){
-  const h = window.location.hash||""; const q = window.location.search||"";
-  return h.includes('type=recovery') || q.includes('type=recovery');
-}
-async function initAuth(){
-  let modoRecuperacao = isRecoveryUrl();
-  sb.auth.onAuthStateChange((event) => {
-    if(event === 'PASSWORD_RECOVERY'){ modoRecuperacao = true; mostrarNovaSenha(); mostrarTelaLogin(); }
-  });
-  const {data:{session}} = await sb.auth.getSession();
-  if(modoRecuperacao){ mostrarNovaSenha(); mostrarTelaLogin(); return; }
-  await entrarNoApp(session);
-}
+};
+window.aoSair = function(){
+  DB = { estabelecimento:{nome:"",cnpj:""}, config:{responsavel_padrao:""}, metodos:[], produtos:[], historico:[] };
+};
 initAuth();
 </script>
 </body>

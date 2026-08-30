@@ -1,3 +1,19 @@
+-- ############################################################
+-- #  ATENÇÃO — NÃO EXECUTE ESTE ARQUIVO.
+-- #
+-- #  Este é o schema INICIAL, guardado apenas como histórico.
+-- #  Ele contém comandos DROP TABLE ... CASCADE nas tabelas
+-- #  metodos, produtos e historico_impressoes.
+-- #
+-- #  Rodar este arquivo APAGA OS DADOS DE PRODUÇÃO de todos os
+-- #  restaurantes: produtos cadastrados, métodos e o histórico
+-- #  de etiquetas impressas. Não há desfazer.
+-- #
+-- #  As tabelas já existem no banco. Alterações daqui em diante
+-- #  são feitas por arquivos de migração próprios, aditivos,
+-- #  sem DROP — por exemplo supabase/temperatura.sql.
+-- ############################################################
+
 -- ============================================================
 -- SAES FOOD LAB — Etiquetas de Validade
 -- Schema do banco (Supabase / Postgres) — v2 (acompanha o app v3,

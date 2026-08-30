@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Operação Segura — Saes Food Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600;6..96,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/ui.css">
+<style>
+.hub{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;}
+.hub-head{text-align:center;margin-bottom:34px;}
+.hub-head h1{font-family:'Bodoni Moda',serif;font-size:30px;font-weight:700;margin:0;letter-spacing:.02em;}
+.hub-head small{display:block;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3);font-weight:700;margin-top:8px;}
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(216px,1fr));gap:14px;width:100%;max-width:560px;}
+.mod{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:26px 22px;
+  text-align:left;cursor:pointer;font-family:inherit;color:var(--ink);transition:.14s;display:block;text-decoration:none;}
+.mod:hover{border-color:var(--cor);}
+.mod:active{transform:scale(.985);}
+.mod .mark{width:30px;height:39px;margin-bottom:16px;}
+.mod .mark svg{width:100%;height:100%;display:block;}
+.mod h2{font-family:'Bodoni Moda',serif;font-size:22px;font-weight:700;margin:0;}
+.mod p{font-size:12.5px;color:var(--ink-3);margin:7px 0 0;line-height:1.5;}
+.mod .tag{display:inline-block;margin-top:14px;font-size:9.5px;font-weight:800;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--cor);}
+.mod-etiquetas{--cor:#17150F;}
+.mod-temperatura{--cor:#2A5B73;}
+.hub-sair{margin-top:30px;}
+.hub-quem{font-size:12px;color:var(--ink-3);text-align:center;margin-top:18px;}
+</style>
+</head>
+<body>
+
+<div class="hub" id="hub" style="display:none;">
+
+  <div class="hub-head">
+    <h1>Operação Segura</h1>
+    <small>Saes Food Lab</small>
+  </div>
+
+  <div class="hub-grid">
+
+    <a class="mod mod-etiquetas" href="index.html">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 26 34" fill="none" stroke="#17150F" stroke-width="1.1" stroke-linecap="round">
+          <path d="M4 2v9M9.7 2v9M16 2v9M22 2v9"/>
+          <path d="M4 11h18v3.2c0 2.6-1.9 4.2-4.4 4.6l-1.1.2v13c0 .6-.5 1-1.2 1h-2.6c-.7 0-1.2-.4-1.2-1V19l-1.1-.2C7.9 18.4 6 16.8 6 14.2"/>
+          <path d="M9.7 11v3.4h6.6V11M13 14.4V19M9.7 13.2H7.6M16.3 13.2h2.1" stroke-width=".85"/>
+        </svg>
+      </div>
+      <h2>Etiquetas</h2>
+      <p>Imprimir etiqueta de validade, cadastrar produtos e métodos de conservação.</p>
+      <span class="tag">Abrir</span>
+    </a>
+
+    <a class="mod mod-temperatura" href="temperatura.html">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 26 34" fill="none" stroke="#2A5B73" stroke-width="1.1" stroke-linecap="round">
+          <path d="M16.4 21.3V5.2c0-1.8-1.5-3.2-3.4-3.2S9.6 3.4 9.6 5.2v16.1a6.5 6.5 0 1 0 6.8 0Z"/>
+          <path d="M13 8.8v14.6" stroke-width=".85"/>
+          <circle cx="13" cy="26.9" r="2.9" fill="#2A5B73" stroke="none"/>
+          <path d="M19.4 7.2h2.8M19.4 11.4h2.8M19.4 15.6h2.8" stroke-width=".85"/>
+        </svg>
+      </div>
+      <h2>Temperatura</h2>
+      <p>Rodada de medição dos equipamentos, com os parâmetros da CVS-3/2026.</p>
+      <span class="tag">Abrir</span>
+    </a>
+
+  </div>
+
+  <div class="hub-quem" id="hub-quem"></div>
+  <div class="hub-sair"><button class="btn btn-ghost btn-sm" onclick="sairDoHub()">Sair da conta</button></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="shared/supabase.js"></script>
+<script src="shared/org.js"></script>
+<script>
+async function sairDoHub(){
+  if(!confirm('Sair da conta?')) return;
+  await sb.auth.signOut();
+  limparContextoOrg();
+  window.location.href = 'index.html';
+}
+
+/* O hub não tem tela de login própria: a porta de entrada do
+   produto é o etiquetas. Sem sessão válida, volta para lá. */
+(async function(){
+  const sessao = await exigirSessao('index.html');
+  if(!sessao) return;
+  const {data:org} = await sb.from('organizacoes').select('nome').eq('id',ORG_ID).single();
+  document.getElementById('hub-quem').textContent = org ? org.nome : '';
+  document.getElementById('hub').style.display = 'flex';
+})();
+</script>
+</body>
+</html>
