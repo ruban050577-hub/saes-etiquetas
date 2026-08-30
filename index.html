@@ -537,7 +537,7 @@ main{flex:1;padding:24px 22px 60px;}
 <div id="print-area"></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script>
 /* ============================================================
    CONFIGURAÇÃO DO SUPABASE
@@ -748,7 +748,7 @@ async function salvarProduto(){
   };
   const id = document.getElementById('prod-id').value;
   if(id){
-    const {data,error} = await sb.from('produtos').update({...dados, updated_at:new Date().toISOString()}).eq('id',id).select().single();
+    const {data,error} = await sb.from('produtos').update({...dados, updated_at:new Date().toISOString()}).eq('id',id).eq('org_id',ORG_ID).select().single();
     if(error){ toast('Erro ao salvar: '+error.message); return; }
     Object.assign(DB.produtos.find(x => x.id === id), data);
   }else{
@@ -761,7 +761,7 @@ async function salvarProduto(){
 async function excluirProduto(id){
   const p = DB.produtos.find(x => x.id === id);
   if(!confirm('Excluir "' + p.nome + '"?')) return;
-  const {error} = await sb.from('produtos').delete().eq('id',id);
+  const {error} = await sb.from('produtos').delete().eq('id',id).eq('org_id',ORG_ID);
   if(error){ toast('Erro ao excluir: '+error.message); return; }
   DB.produtos = DB.produtos.filter(x => x.id !== id);
   renderProdutos(); toast("Produto excluído");
@@ -846,7 +846,7 @@ async function salvarMetodo(){
   const familia = document.getElementById('met-fam').value;
   const id = document.getElementById('met-id').value;
   if(id){
-    const {data,error} = await sb.from('metodos').update({nome,horas,familia}).eq('id',id).select().single();
+    const {data,error} = await sb.from('metodos').update({nome,horas,familia}).eq('id',id).eq('org_id',ORG_ID).select().single();
     if(error){ toast('Erro ao salvar: '+error.message); return; }
     Object.assign(metodo(id), data);
   }else{
@@ -864,7 +864,7 @@ async function excluirMetodo(id){
     return;
   }
   if(!confirm('Excluir "' + metodo(id).nome + '"?')) return;
-  const {error} = await sb.from('metodos').delete().eq('id',id);
+  const {error} = await sb.from('metodos').delete().eq('id',id).eq('org_id',ORG_ID);
   if(error){ toast('Erro ao excluir: '+error.message); return; }
   DB.metodos = DB.metodos.filter(m => m.id !== id);
   renderMetodos(); toast("Método excluído");
