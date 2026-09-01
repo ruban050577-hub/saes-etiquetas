@@ -95,14 +95,8 @@
 .setas .icon-btn:disabled:hover{border-color:var(--rule);color:var(--ink-2);}
 
 @media(max-width:680px){
-  /* Quatro abas com nomes longos não cabem ao lado da marca numa
-     tela de 5 polegadas — elas passam para uma segunda linha,
-     ocupando a largura toda. Alvo de toque maior, de quebra. */
-  header.topbar{flex-wrap:wrap;row-gap:11px;}
-  .topbar-right{width:100%;justify-content:space-between;gap:8px;}
-  nav.tabs{flex:1;min-width:0;}
-  nav.tabs button{flex:1;padding:10px 4px;font-size:12.5px;}
-
+  /* o cabeçalho em duas linhas agora vive no ui.css, valendo para os
+     dois módulos — aqui fica só o que é da tela de rodada */
   .rodada{min-height:calc(100dvh - 178px);}
   .rd-nome{font-size:27px;}
   .rd-input{font-size:38px;}

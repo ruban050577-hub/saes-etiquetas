@@ -188,9 +188,16 @@ main{flex:1;padding:24px 22px 60px;}
 @media(max-width:680px){
   header.topbar{padding:13px 16px;}
   main{padding:18px 16px 50px;}
-  nav.tabs button{padding:9px 10px;font-size:12.5px;}
   .brand small{display:none;}
   .section-head h2{font-size:22px;}
   .field .cols{flex-direction:column;gap:15px;}
+
+  /* Quatro abas mais os botões de módulo e sair não cabem ao lado da
+     marca numa tela de 5 polegadas — passam para uma segunda linha,
+     ocupando a largura toda. Alvo de toque maior, de quebra. */
+  header.topbar{flex-wrap:wrap;row-gap:11px;}
+  .topbar-right{width:100%;justify-content:space-between;gap:8px;}
+  nav.tabs{flex:1;min-width:0;}
+  nav.tabs button{flex:1;padding:10px 4px;font-size:12.5px;}
 }
 
