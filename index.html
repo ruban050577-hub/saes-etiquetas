@@ -742,11 +742,18 @@ document.getElementById('imp-lote').addEventListener('input', e => { e.target.da
 ['imp-sif','imp-fab'].forEach(id =>
   document.getElementById(id).addEventListener('input', renderPreview));
 
-function disparar(qtd){
-  let i = 0;
-  const fire = () => { if(i < qtd){ i++; window.print(); setTimeout(fire, 400); } };
-  fire();
+/* Uma etiqueta por página, todas de uma vez.
+   Antes isto chamava window.print() uma vez por cópia, em sequência.
+   Só a primeira saía: as demais partiam de um temporizador, sem clique
+   do usuário, e o navegador descarta print() sem gesto. Agora o
+   #print-area recebe as N páginas e imprime numa passada só — que é
+   também o que o driver da impressora de etiqueta espera. */
+function paginasHTML(conteudo, qtd){
+  let out = '';
+  for(let i = 0; i < qtd; i++) out += '<div class="pa-pagina">' + conteudo + '</div>';
+  return out;
 }
+function disparar(){ window.print(); }
 async function imprimirProduto(){
   /* Responsável e fabricação são obrigatórios: etiqueta sem quem
      preparou e sem a data de origem não serve como rastreabilidade,
@@ -761,10 +768,10 @@ async function imprimirProduto(){
   }
   const qtd = Math.min(50, Math.max(1, parseInt(document.getElementById('imp-qtd').value || 1, 10)));
   const d = dadosImpressao();
-  document.getElementById('print-area').innerHTML = etiquetaHTML('pa', d);
+  document.getElementById('print-area').innerHTML = paginasHTML(etiquetaHTML('pa', d), qtd);
   await registrarHistorico({tipo:'produto', produto: prodAtual.nome, metodo: d._metodo,
     resp: d.resp, sif: d._sif, lote: d._lote, qtd, preparo: d._prep, validade: d._val});
-  fechar('m-imprimir'); disparar(qtd);
+  fechar('m-imprimir'); disparar();
   toast(qtd > 1 ? qtd + " etiquetas enviadas" : "Etiqueta enviada");
 }
 
@@ -797,13 +804,13 @@ async function imprimirAvulso(){
   if(!avResp.value.trim()){ toast("Informe o responsável"); avResp.focus(); return; }
   const qtd = Math.min(50, Math.max(1, parseInt(document.getElementById('av-qtd').value || 1, 10)));
   const d = dadosAvulso();
-  document.getElementById('print-area').innerHTML =
+  document.getElementById('print-area').innerHTML = paginasHTML(
     '<div class="pa-avulso">' + esc(d.produto) + '</div>' +
     '<div class="pa-extra"><span>' + d.impresso + '</span><span>Resp.: ' + esc(d.resp) + '</span></div>' +
-    '<div class="pa-foot">' + esc(d.rodape) + '</div>';
+    '<div class="pa-foot">' + esc(d.rodape) + '</div>', qtd);
   await registrarHistorico({tipo:'avulso', produto:txt, metodo:'Rótulo avulso',
     resp: d.resp, sif:"", lote:"", qtd, preparo: new Date(), validade: null});
-  fechar('m-avulso'); disparar(qtd);
+  fechar('m-avulso'); disparar();
   toast(qtd > 1 ? qtd + " rótulos enviados" : "Rótulo enviado");
 }
 

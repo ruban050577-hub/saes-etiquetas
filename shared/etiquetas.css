@@ -56,19 +56,25 @@
      fluxo, e o documento passa a ter exatamente uma página. */
   /* min-height:0 é essencial: o ui.css define min-height:100% em
      html e body, o que sozinho já estica o documento para a altura
-     da janela e produz páginas em branco depois da etiqueta. */
-  html,body{background:#fff;margin:0;padding:0;width:60mm;height:60mm;
-    min-height:0;max-height:60mm;overflow:hidden;}
+     da janela e produz páginas em branco depois da etiqueta.
+     A altura NÃO é travada em 60mm aqui: com várias cópias, o
+     documento tem N páginas de 60mm. Quem tem 60mm é cada página. */
+  html,body{background:#fff;margin:0;padding:0;width:60mm;min-height:0;}
   body > *{display:none !important;}
 
-  /* 3,5mm de margem em todos os lados: a impressora tem tolerância de
-     alinhamento e o lado direito estava saindo na linha de corte.
-     Coluna flex para o conteúdo ocupar os 60mm de altura, em vez de
-     ficar espremido no topo com a fita vazia embaixo. */
-  #print-area{display:flex !important;flex-direction:column;position:static;
-    width:60mm;height:60mm;padding:3.5mm;
-    color:#000;background:#fff;font-family:'Archivo',sans-serif;box-sizing:border-box;overflow:hidden;
+  #print-area{display:block !important;position:static;width:60mm;
+    color:#000;background:#fff;font-family:'Archivo',sans-serif;}
+
+  /* Uma etiqueta por página. 3,5mm de margem em todos os lados: a
+     impressora tem tolerância de alinhamento e o lado direito estava
+     saindo na linha de corte. Coluna flex para o conteúdo ocupar os
+     60mm de altura, em vez de ficar espremido no topo. */
+  .pa-pagina{display:flex;flex-direction:column;width:60mm;height:60mm;padding:3.5mm;
+    box-sizing:border-box;overflow:hidden;background:#fff;
+    break-after:page;page-break-after:always;
     -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  /* sem isto o navegador cospe uma folha em branco no fim */
+  .pa-pagina:last-child{break-after:auto;page-break-after:auto;}
 
   .pa-prod{font-size:13pt;font-weight:900;line-height:1.05;text-transform:uppercase;letter-spacing:-.02em;
     border-bottom:.4mm solid #000;padding-bottom:1.2mm;max-height:11mm;overflow:hidden;}
