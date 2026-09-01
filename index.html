@@ -259,7 +259,7 @@
       <div><label>Lote <span class="opt">automático</span></label><input type="text" id="imp-lote"></div>
     </div></div>
     <div class="field"><div class="cols">
-      <div><label>Fabricação <span class="opt">opcional</span></label><input type="date" id="imp-fab"></div>
+      <div><label>Fabricação</label><input type="date" id="imp-fab"></div>
       <div><label>SIF <span class="opt">opcional</span></label><input type="text" id="imp-sif"></div>
     </div></div>
     <div class="field"><label>Quantidade</label>
@@ -748,6 +748,17 @@ function disparar(qtd){
   fire();
 }
 async function imprimirProduto(){
+  /* Responsável e fabricação são obrigatórios: etiqueta sem quem
+     preparou e sem a data de origem não serve como rastreabilidade,
+     e depois de impressa e colada não há como corrigir. */
+  const respEl = document.getElementById('imp-resp');
+  if(!respEl.value.trim()){
+    toast("Informe o responsável"); respEl.focus(); return;
+  }
+  const fabEl = document.getElementById('imp-fab');
+  if(!fabEl.value){
+    toast("Informe a data de fabricação"); fabEl.focus(); return;
+  }
   const qtd = Math.min(50, Math.max(1, parseInt(document.getElementById('imp-qtd').value || 1, 10)));
   const d = dadosImpressao();
   document.getElementById('print-area').innerHTML = etiquetaHTML('pa', d);
@@ -782,6 +793,8 @@ function renderAvulso(){
 async function imprimirAvulso(){
   const txt = document.getElementById('av-txt').value.trim();
   if(!txt){ toast("Escreva o texto do rótulo"); return; }
+  const avResp = document.getElementById('av-resp');
+  if(!avResp.value.trim()){ toast("Informe o responsável"); avResp.focus(); return; }
   const qtd = Math.min(50, Math.max(1, parseInt(document.getElementById('av-qtd').value || 1, 10)));
   const d = dadosAvulso();
   document.getElementById('print-area').innerHTML =
