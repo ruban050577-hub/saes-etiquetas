@@ -48,10 +48,20 @@
 #print-area{display:none;}
 @media print{
   @page{ size:60mm 60mm; margin:0; }
-  body{background:#fff;}
-  body *{visibility:hidden;}
-  #print-area,#print-area *{visibility:visible;}
-  #print-area{display:block;position:fixed;left:0;top:0;width:60mm;height:60mm;padding:2mm 2.2mm;
+
+  /* O app é REMOVIDO do layout, não apenas escondido.
+     Com visibility:hidden ele continuava ocupando a altura toda, e
+     numa folha de 60mm isso virava várias páginas em branco — com a
+     etiqueta empurrada para a última delas. display:none tira do
+     fluxo, e o documento passa a ter exatamente uma página. */
+  /* min-height:0 é essencial: o ui.css define min-height:100% em
+     html e body, o que sozinho já estica o documento para a altura
+     da janela e produz páginas em branco depois da etiqueta. */
+  html,body{background:#fff;margin:0;padding:0;width:60mm;height:60mm;
+    min-height:0;max-height:60mm;overflow:hidden;}
+  body > *{display:none !important;}
+
+  #print-area{display:block !important;position:static;width:60mm;height:60mm;padding:2mm 2.2mm;
     color:#000;background:#fff;font-family:'Archivo',sans-serif;box-sizing:border-box;overflow:hidden;
     -webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .pa-prod{font-size:11pt;font-weight:900;line-height:1.02;text-transform:uppercase;letter-spacing:-.01em;
