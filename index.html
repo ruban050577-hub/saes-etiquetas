@@ -183,6 +183,12 @@
     <input type="hidden" id="prod-id">
     <div class="field"><label>Nome</label>
       <input type="text" id="prod-nome" placeholder="Frango grelhado desfiado"></div>
+    <div class="field"><label>Categoria</label>
+      <select id="prod-categoria" onchange="trocarCategoria()">
+        <option value="">Preparado internamente</option>
+        <option value="industrializado_fracionado">Industrializado — retirado da embalagem</option>
+      </select></div>
+    <div class="help" id="prod-cat-ajuda"></div>
     <div class="field"><div class="cols">
       <div><label>Grupo <span class="opt">opcional</span></label>
         <input type="text" id="prod-grupo" list="dl-grupos" placeholder="Proteínas">
@@ -193,7 +199,7 @@
     <div class="field"><div class="cols">
       <div><label>Fornecedor <span class="opt">opcional</span></label>
         <input type="text" id="prod-fab" placeholder=""></div>
-      <div><label>Marca <span class="opt">opcional</span></label>
+      <div><label for-marca>Marca <span class="opt">opcional</span></label>
         <input type="text" id="prod-marca" placeholder=""></div>
     </div></div>
     <div class="field"><label>Métodos e prazos</label>
@@ -430,18 +436,61 @@ function renderGrid(){
 document.getElementById('busca').addEventListener('input', renderGrid);
 
 /* ===================== CADASTRO: PRODUTO ===================== */
-function linhasMetodos(containerId, selecionados){
+/* ===================== CATEGORIA DO PRODUTO =====================
+   null / ""  = preparado internamente. Prazos da CVS-3/2026.
+   industrializado_fracionado = saiu da embalagem original do
+   fabricante (RDC 216/2004, item 4.8.6). Não há tabela da norma:
+   o prazo é o que o rótulo do fabricante declara, e nunca pode
+   passar da validade original do produto fechado.
+   ============================================================ */
+const CAT_INDUSTRIALIZADO = 'industrializado_fracionado';
+
+function ehMetodoIndustrializado(m){
+  return /^Industrializado aberto/.test(m.nome);
+}
+function categoriaSelecionada(){
+  return document.getElementById('prod-categoria').value || null;
+}
+/* Cada categoria enxerga só os métodos que fazem sentido para ela:
+   um molho de fabricante não é "alimento pós-cocção", e um refogado
+   da casa não é "industrializado aberto". */
+function metodosDaCategoria(cat){
+  return cat === CAT_INDUSTRIALIZADO
+    ? DB.metodos.filter(ehMetodoIndustrializado)
+    : DB.metodos.filter(m => !ehMetodoIndustrializado(m));
+}
+function trocarCategoria(){
+  const cat = categoriaSelecionada();
+  const ind = cat === CAT_INDUSTRIALIZADO;
+  document.getElementById('prod-cat-ajuda').innerHTML = ind
+    ? 'O prazo é o que está escrito no rótulo do fabricante <b>depois de aberto</b> — não existe tabela da norma para isso. ' +
+      'A validade nunca passa da validade original do produto fechado. Marca vira obrigatória.'
+    : '';
+  document.querySelector('label[for-marca]').innerHTML = ind
+    ? 'Marca' : 'Marca <span class="opt">opcional</span>';
+  linhasMetodos('prod-metodos', lerMetodos('prod-metodos'), cat);
+}
+
+function linhasMetodos(containerId, selecionados, cat){
   const box = document.getElementById(containerId);
-  box.innerHTML = DB.metodos.map(m => {
+  /* o cadastro em lote não escolhe categoria: entra como preparado
+     internamente, então não deve oferecer os métodos de fabricante */
+  const lista = metodosDaCategoria(cat || null);
+  const industrial = cat === CAT_INDUSTRIALIZADO;
+  box.innerHTML = lista.map(m => {
     const sel = (selecionados||[]).find(s => s.mid === m.id);
     const on = !!sel;
     const h = on && sel.horas != null ? sel.horas : m.horas;
     const unid = (h != null && h % 24 === 0 && h !== 0) ? 'd' : 'h';
-    const val  = unid === 'd' ? h/24 : h;
+    /* Industrializado começa em branco de propósito: não há prazo
+       padrão a sugerir, e um número pré-preenchido convida a aceitar
+       sem conferir o rótulo. */
+    const val  = (industrial && !h) ? '' : (unid === 'd' ? h/24 : h);
+    const nota = industrial ? 'prazo do rótulo do fabricante' : 'padrão ' + prazoTxt(m.horas);
     return '<div class="mp-row ' + (on ? 'on' : 'off') + '" data-mid="' + m.id + '">' +
       '<input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="toggleMet(this)" ' +
         'aria-label="' + esc(m.nome) + '">' +
-      '<div class="mp-nome">' + esc(m.nome) + '<small>padrão ' + prazoTxt(m.horas) + '</small></div>' +
+      '<div class="mp-nome">' + esc(m.nome) + '<small>' + nota + '</small></div>' +
       '<div class="mp-prazo">' +
         '<input type="number" min="0" step="1" value="' + val + '" class="mp-val">' +
         '<select class="mp-unid"><option value="d"' + (unid === 'd' ? ' selected' : '') + '>dias</option>' +
@@ -475,8 +524,10 @@ function abrirProduto(id){
   document.getElementById('prod-sif').value   = p ? (p.sif||"") : "";
   document.getElementById('prod-fab').value   = p ? (p.fabricante||"") : "";
   document.getElementById('prod-marca').value = p ? (p.marca||"") : "";
+  document.getElementById('prod-categoria').value = p ? (p.categoria||"") : "";
   popularGrupos();
-  linhasMetodos('prod-metodos', p ? p.metodos : []);
+  linhasMetodos('prod-metodos', p ? p.metodos : [], p ? p.categoria : null);
+  trocarCategoria();
   abrir('m-produto');
 }
 async function salvarProduto(){
@@ -484,12 +535,29 @@ async function salvarProduto(){
   if(!nome){ toast("Informe o nome do produto"); return; }
   const mets = lerMetodos('prod-metodos');
   if(mets.length === 0){ toast("Marque pelo menos um método"); return; }
+
+  const cat = categoriaSelecionada();
+  const marcaEl = document.getElementById('prod-marca');
+  if(cat === CAT_INDUSTRIALIZADO){
+    /* Sem marca, a etiqueta de um produto de fabricante não
+       identifica de quem é o prazo que está impresso nela. */
+    if(!marcaEl.value.trim()){
+      toast("Informe a marca do produto industrializado"); marcaEl.focus(); return;
+    }
+    /* Não há prazo padrão a herdar: se ficou em zero, ninguém leu o
+       rótulo. Deixar passar imprimiria "mesmo dia" numa maionese. */
+    if(mets.some(x => !x.horas)){
+      toast("Informe o prazo depois de aberto, do rótulo do fabricante"); return;
+    }
+  }
+
   const dados = {
     nome,
+    categoria:  cat,
     grupo:      document.getElementById('prod-grupo').value.trim(),
     sif:        document.getElementById('prod-sif').value.trim(),
     fabricante: document.getElementById('prod-fab').value.trim(),
-    marca:      document.getElementById('prod-marca').value.trim(),
+    marca:      marcaEl.value.trim(),
     metodos:    mets
   };
   const id = document.getElementById('prod-id').value;
@@ -656,18 +724,32 @@ function etiquetaHTML(pfx, dados){
       '<div class="' + pfx + '-extra"><span>Resp.: ' + esc(dados.resp) + '</span></div>' +
       '<div class="' + pfx + '-foot">' + esc(dados.rodape) + '</div>';
   }
-  const modos = FAMILIAS.map(f =>
-    '<span class="' + pfx + '-modo' + (f === dados.familia ? ' on' : '') + '">' + f + '</span>').join('');
+  /* Só o modo escolhido vai para a fita. Imprimir as cinco famílias
+     e destacar uma gastava duas linhas de uma etiqueta de 60mm para
+     dizer quatro coisas que o produto NÃO é. */
+  const modos = dados.familia
+    ? '<span class="' + pfx + '-modo on">' + esc(dados.familia) + '</span>'
+    : '';
   const extras = dados.extras.map(e => '<span>' + esc(e) + '</span>').join('');
-  return '<div class="' + pfx + '-prod">' + esc(dados.produto) + '</div>' +
+  const ind = dados.industrializado;
+
+  return (ind
+      ? '<div class="' + pfx + '-selo"><span>Industrializado</span>' +
+        (dados.marca ? '<b>' + esc(dados.marca) + '</b>' : '') + '</div>'
+      : '') +
+    '<div class="' + pfx + '-prod">' + esc(dados.produto) + '</div>' +
     (dados.fabricacao ? '<div class="' + pfx + '-line"><span class="' + lc + '">Fabricação</span><b>' +
       dados.fabricacao + '</b></div>' : '') +
-    '<div class="' + pfx + '-line"><span class="' + lc + '">Manipulação</span><b>' + dados.manipulacao + '</b></div>' +
+    /* RDC 216 chama de "data de fracionamento"; para o preparado
+       internamente o termo da CVS é manipulação. */
+    '<div class="' + pfx + '-line"><span class="' + lc + '">' + (ind ? 'Fracionado' : 'Manipulação') +
+      '</span><b>' + dados.manipulacao + '</b></div>' +
     '<div class="' + pfx + '-line"><span class="' + lc + '">Validade</span>' +
       '<b class="' + pfx + '-val">' + dados.validade + '</b></div>' +
-    '<div class="' + pfx + '-modos">' + modos + '</div>' +
+    (modos ? '<div class="' + pfx + '-modos">' + modos + '</div>' : '') +
     '<div class="' + pfx + '-extra"><span>Resp.: ' + esc(dados.resp) + '</span>' + extras + '</div>' +
-    '<div class="' + pfx + '-foot">' + esc(dados.rodape) + '</div>';
+    '<div class="' + pfx + '-foot">' + esc(dados.rodape) +
+      (ind ? '<br>Ref. RDC 216/2004, item 4.8.6 (ANVISA)' : '') + '</div>';
 }
 function rodape(){
   return DB.estabelecimento.nome || "Saes Food Lab";
@@ -723,7 +805,8 @@ function dadosImpressao(){
   const extras = [];
   if(sif)  extras.push('SIF: ' + sif);
   if(lote) extras.push('Lote: ' + lote);
-  if(prodAtual.marca) extras.push(prodAtual.marca);
+  /* no industrializado a marca já sai em destaque no selo */
+  if(prodAtual.marca && prodAtual.categoria !== CAT_INDUSTRIALIZADO) extras.push(prodAtual.marca);
   return {
     produto: prodAtual.nome,
     familia: m ? m.familia : "",
@@ -732,6 +815,8 @@ function dadosImpressao(){
     validade: h == null ? 'DEFINIR' : (h === 0 ? 'USAR HOJE' : fmtDH(val)),
     resp: document.getElementById('imp-resp').value.trim() || "—",
     extras, rodape: rodape(),
+    industrializado: prodAtual.categoria === CAT_INDUSTRIALIZADO,
+    marca: prodAtual.marca || "",
     _prep: prep, _val: h == null ? null : val, _lote: lote, _sif: sif, _metodo: m ? m.nome : ""
   };
 }

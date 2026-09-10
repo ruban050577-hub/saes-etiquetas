@@ -19,6 +19,18 @@
 .mp-row.off .mp-prazo{opacity:.35;pointer-events:none;}
 
 
+/* ---------- selo de produto industrializado fracionado ----------
+   Precisa se distinguir de um item preparado na casa com um olhar:
+   moldura tracejada, ao contrário das linhas cheias do resto da
+   etiqueta. RDC 216/2004, item 4.8.6. */
+.lp-selo{display:flex;align-items:center;gap:6px;border:1px dashed #000;border-radius:2px;
+  padding:2px 5px;margin-bottom:6px;}
+.lp-selo span{font-size:8.5px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
+  background:#000;color:#fff;padding:2px 5px;border-radius:1px;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.lp-selo b{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+
 /* ---------- ETIQUETA (assinatura do app) ---------- */
 .label-preview{background:var(--stock);color:#000;padding:11px 12px;margin:0 0 18px;
   border:1.5px solid #000;box-shadow:3px 3px 0 rgba(23,21,15,.13);}
@@ -75,6 +87,16 @@
     -webkit-print-color-adjust:exact;print-color-adjust:exact;}
   /* sem isto o navegador cospe uma folha em branco no fim */
   .pa-pagina:last-child{break-after:auto;page-break-after:auto;}
+
+  /* selo de industrializado: moldura tracejada, para não se confundir
+     com um item preparado na casa (RDC 216/2004, item 4.8.6) */
+  .pa-selo{display:flex;align-items:center;gap:1.5mm;border:.25mm dashed #000;border-radius:.5mm;
+    padding:.6mm 1.2mm;margin-bottom:1.4mm;overflow:hidden;}
+  .pa-selo span{font-size:5.5pt;font-weight:900;letter-spacing:.12em;text-transform:uppercase;
+    background:#000;color:#fff;padding:.4mm 1mm;border-radius:.3mm;white-space:nowrap;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .pa-selo b{font-size:7.5pt;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;
+    overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 
   .pa-prod{font-size:13pt;font-weight:900;line-height:1.05;text-transform:uppercase;letter-spacing:-.02em;
     border-bottom:.4mm solid #000;padding-bottom:1.2mm;max-height:11mm;overflow:hidden;}
