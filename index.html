@@ -693,7 +693,7 @@ function renderMetodos(){
   box.innerHTML = DB.metodos.map(m => {
     const n = DB.produtos.filter(p => (p.metodos||[]).some(x => x.mid === m.id)).length;
     return '<div class="row"><div class="info"><div class="nome">' + esc(m.nome) + '</div>' +
-      '<div class="sub">' + prazoTxt(m.horas) + ' · família ' + esc(m.familia) +
+      '<div class="sub">' + (ehMetodoIndustrializado(m) ? 'prazo do rótulo do fabricante, definido por produto' : prazoTxt(m.horas)) + ' · família ' + esc(m.familia) +
       ' · ' + n + (n === 1 ? ' produto' : ' produtos') + '</div></div>' +
       '<div class="acts"><button class="icon-btn" title="Editar" onclick="abrirMetodo(\'' + m.id + '\')">✎</button>' +
       '<button class="icon-btn" title="Excluir" onclick="excluirMetodo(\'' + m.id + '\')">✕</button></div></div>';
@@ -998,7 +998,7 @@ async function restaurarDeCopia(d){
 
   if(d.produtos.length){
     const linhas = d.produtos.map(p => ({
-      org_id:ORG_ID, nome:p.nome, grupo:p.grupo||"", sif:p.sif||"", fabricante:p.fabricante||"", marca:p.marca||"",
+      org_id:ORG_ID, nome:p.nome, categoria:p.categoria||null, grupo:p.grupo||"", sif:p.sif||"", fabricante:p.fabricante||"", marca:p.marca||"",
       metodos: (p.metodos||[]).map(pm => ({mid: mapaId[pm.mid]||pm.mid, horas: pm.horas}))
     }));
     await sb.from('produtos').insert(linhas);
