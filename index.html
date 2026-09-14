@@ -275,6 +275,9 @@
       <button class="btn btn-ghost" onclick="fechar('m-imprimir')">Cancelar</button>
       <button class="btn btn-primary" onclick="imprimirProduto()">Imprimir</button>
     </div>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="link-btn" onclick="editarDaImpressao()">Cadastro errado ou uso novo? Editar este produto</button>
+    </div>
   </div>
 </div>
 
@@ -303,6 +306,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="shared/supabase.js"></script>
 <script src="shared/org.js"></script>
+<script src="shared/atualizar.js"></script>
 <script>
 
 /* ============================================================
@@ -516,6 +520,7 @@ function popularGrupos(){
     grupos().map(g => '<option value="' + esc(g) + '">').join('');
 }
 function abrirProduto(id){
+  voltarParaImpressao = null;   // aberto por Cadastros; editarDaImpressao liga de novo
   const p = id ? DB.produtos.find(x => x.id === id) : null;
   document.getElementById('prod-titulo').textContent = p ? "Editar produto" : "Novo produto";
   document.getElementById('prod-id').value    = p ? p.id : "";
@@ -570,7 +575,25 @@ async function salvarProduto(){
     if(error){ toast('Erro ao salvar: '+error.message); return; }
     DB.produtos.push(data);
   }
-  renderProdutos(); fechar('m-produto'); toast("Produto salvo");
+  /* a tela de Imprimir também precisa ser redesenhada: sem isso, quem
+     editava um produto e ia imprimir via os métodos antigos até
+     recarregar a página */
+  renderProdutos(); renderGrid(); fechar('m-produto'); toast("Produto salvo");
+
+  // se a edição começou no modal de impressão, volta para ele já corrigido
+  const destino = voltarParaImpressao; voltarParaImpressao = null;
+  if(destino) abrirImpressao(destino);
+}
+
+/* Editar a partir da impressão: o funcionário percebe o erro na hora
+   de imprimir, e é ali que precisa corrigir — não em Cadastros. */
+let voltarParaImpressao = null;
+function editarDaImpressao(){
+  if(!prodAtual) return;
+  const id = prodAtual.id;
+  fechar('m-imprimir');
+  abrirProduto(id);
+  voltarParaImpressao = id;
 }
 async function excluirProduto(id){
   const p = DB.produtos.find(x => x.id === id);
